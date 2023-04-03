@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"gin-demo/constants"
-	"gin-demo/core/ginc"
-	"gin-demo/core/jwt"
+	"gin-web/constants"
+	"gin-web/core/ginc"
+	"gin-web/core/jwt"
 	"github.com/gin-gonic/gin"
 	"strings"
 )
@@ -42,7 +42,7 @@ func JWT() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		c.Set("username", claims)
 		c.Next()
 	}

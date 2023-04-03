@@ -1,7 +1,7 @@
 package ginc
 
 import (
-	"gin-demo/core/result"
+	"gin-web/core/result"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

@@ -1,10 +1,10 @@
 package v1
 
 import (
-	"gin-demo/core/ginc"
-	"gin-demo/models"
-	"gin-demo/service"
-	"gin-demo/validators/tag"
+	"gin-web/core/ginc"
+	"gin-web/models"
+	"gin-web/service"
+	"gin-web/validators/tag"
 	"github.com/gin-gonic/gin"
 )
 

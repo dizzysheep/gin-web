@@ -2,9 +2,9 @@ package service
 
 import (
 	"errors"
-	"gin-demo/models"
-	"gin-demo/validators/article"
-	"gin-demo/validators/tag"
+	"gin-web/models"
+	"gin-web/validators/article"
+	"gin-web/validators/tag"
 )
 
 type ArticleService struct {

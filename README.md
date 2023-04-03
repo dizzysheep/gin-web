@@ -1,4 +1,4 @@
-# gin-demo
+# gin-web
 
 #### 介绍
 gin+gorm 练习
@@ -10,7 +10,7 @@ gin+gorm 练习
 #### 安装教程
 
 1. git clone xxxxx
-2. go mod init gin-demo
+2. go mod init gin-web
 3. go mod vendor
 
 #### 使用说明

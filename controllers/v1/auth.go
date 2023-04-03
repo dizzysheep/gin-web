@@ -1,9 +1,9 @@
 package v1
 
 import (
-	"gin-demo/core/ginc"
-	"gin-demo/core/jwt"
-	"gin-demo/models"
+	"gin-web/core/ginc"
+	"gin-web/core/jwt"
+	"gin-web/models"
 	"github.com/gin-gonic/gin"
 )
 

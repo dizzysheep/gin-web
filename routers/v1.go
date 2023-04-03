@@ -1,8 +1,8 @@
 package routers
 
 import (
-	v1 "gin-demo/controllers/v1"
-	"gin-demo/middleware"
+	v1 "gin-web/controllers/v1"
+	"gin-web/middleware"
 	"github.com/gin-gonic/gin"
 )
 

@@ -1,9 +1,9 @@
 package v1
 
 import (
-	"gin-demo/core/ginc"
-	"gin-demo/service"
-	"gin-demo/validators/article"
+	"gin-web/core/ginc"
+	"gin-web/service"
+	"gin-web/validators/article"
 	"github.com/gin-gonic/gin"
 )
 

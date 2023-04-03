@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"gin-demo/models"
-	"gin-demo/validators/tag"
+	"gin-web/models"
+	"gin-web/validators/tag"
 )
 
 type TagService struct {

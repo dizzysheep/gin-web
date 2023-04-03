@@ -2,7 +2,7 @@ package apis
 
 import (
 	"fmt"
-	"gin-demo/core/netlib"
+	"gin-web/core/netlib"
 	urlNet "net/url"
 	"strings"
 	"time"

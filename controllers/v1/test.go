@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"gin-demo/core/apis"
-	"gin-demo/core/ginc"
+	"gin-web/core/apis"
+	"gin-web/core/ginc"
 	"github.com/gin-gonic/gin"
 )
 

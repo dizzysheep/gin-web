@@ -1,8 +1,8 @@
 package routers
 
 import (
-	_ "gin-demo/docs" // 这里需要引入本地已生成文档
-	"gin-demo/middleware"
+	_ "gin-web/docs" // 这里需要引入本地已生成文档
+	"gin-web/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"

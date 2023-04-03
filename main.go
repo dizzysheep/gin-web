@@ -1,9 +1,9 @@
 package main
 
 import (
-	"gin-demo/core/redis"
-	"gin-demo/models"
-	"gin-demo/routers"
+	"gin-web/core/redis"
+	"gin-web/models"
+	"gin-web/routers"
 	"github.com/fvbock/endless"
 	"github.com/yangxx0612/plugins/config"
 	"github.com/yangxx0612/plugins/log"

@@ -1,4 +1,4 @@
-# gin-demo
+# gin-web
 
 #### Description
 gin+gorm 练习
