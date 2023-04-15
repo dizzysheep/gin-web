@@ -1,8 +1,8 @@
 package routers
 
 import (
-	_ "gin-web/docs" // 这里需要引入本地已生成文档
-	"gin-web/middleware"
+	middleware2 "gin-web/app/middleware"
+	_ "gin-web/pkg/docs" // 这里需要引入本地已生成文档
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
@@ -12,9 +12,9 @@ import (
 func InitRouter() *gin.Engine {
 	router := gin.New()
 
-	router.Use(middleware.RequestID())
+	router.Use(middleware2.RequestID())
 
-	router.Use(middleware.Logger())
+	router.Use(middleware2.Logger())
 
 	router.Use(gin.Recovery())
 

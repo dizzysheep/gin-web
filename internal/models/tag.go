@@ -1,5 +1,7 @@
 package models
 
+import "gin-web/global"
+
 type Tag struct {
 	Model
 	Name       string `json:"name"`
@@ -18,7 +20,7 @@ func (m *Tag) TableName() string {
 
 func (m *Tag) GetListByPage(params interface{}, pageNo int, pageSize int) (total int, tags []Tag, err error) {
 	offset := (pageNo - 1) * pageSize
-	err = db.Model(m).Where(params).Offset(offset).Limit(pageSize).Find(&tags).Count(&total).Error
+	err = global.BlogDB.Model(m).Where(params).Offset(offset).Limit(pageSize).Find(&tags).Count(&total).Error
 	if err != nil {
 		return total, tags, err
 	}
@@ -27,11 +29,11 @@ func (m *Tag) GetListByPage(params interface{}, pageNo int, pageSize int) (total
 }
 
 func (m *Tag) FindById(id int) {
-	db.Model(m).Where("id = ?", id).First(m)
+	global.BlogDB.Model(m).Where("id = ?", id).First(m)
 }
 
 func (m *Tag) FindByWhere(params interface{}) bool {
-	db.Model(m).Where(params).First(m)
+	global.BlogDB.Model(m).Where(params).First(m)
 	if m.ID > 0 {
 		return true
 	}
@@ -39,7 +41,7 @@ func (m *Tag) FindByWhere(params interface{}) bool {
 }
 
 func (m *Tag) Create() (int, error) {
-	err := db.Create(m).Error
+	err := global.BlogDB.Create(m).Error
 	if err != nil {
 		return 0, err
 	}
@@ -48,10 +50,10 @@ func (m *Tag) Create() (int, error) {
 }
 
 func (m *Tag) Update() error {
-	return db.Model(m).Save(m).Error
+	return global.BlogDB.Model(m).Save(m).Error
 }
 
 func (m *Tag) DeleteTag(id int) bool {
-	db.Where("id = ?", id).Delete(&Tag{})
+	global.BlogDB.Where("id = ?", id).Delete(&Tag{})
 	return true
 }

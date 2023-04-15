@@ -97,6 +97,11 @@ func (s *Result) String() string {
 	return fmt.Sprintf("Code:[%d] Msg:[%s]", s.Code, s.Msg)
 }
 
+func (s *Result) SetRequestId(requestId string) *Result {
+	s.RequestId = requestId
+	return s
+}
+
 func (s *Result) dealError(errs []interface{}) {
 	for i, err := range errs {
 		if val, ok := err.(TransferMsg); ok { // error_msg

@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"gin-web/constants"
 	"gin-web/core/ginc"
 	"gin-web/core/jwt"
+	"gin-web/pkg/constants"
 	"github.com/gin-gonic/gin"
 	"strings"
 )

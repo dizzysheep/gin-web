@@ -1,31 +1,42 @@
 package main
 
 import (
-	"gin-web/core/redis"
-	"gin-web/models"
-	"gin-web/routers"
-	"github.com/fvbock/endless"
+	"context"
+	"gin-web/app/routers"
+	"gin-web/core/boot"
 	"github.com/yangxx0612/plugins/config"
-	"github.com/yangxx0612/plugins/log"
-	"syscall"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
 	"time"
 )
 
-func init() {
-	models.Setup()
-	redis.RedisSetup()
-}
-
 func main() {
-	endless.DefaultReadTimeOut = time.Duration(config.AppReadTimeout) * time.Second
-	endless.DefaultWriteTimeOut = time.Duration(config.AppWriteTimeout) * time.Second
-	endless.DefaultMaxHeaderBytes = 1 << 20
-	server := endless.NewServer(config.AppAddr, routers.InitRouter())
-	server.BeforeBegin = func(add string) {
-		log.Loger.Printf("Actual pid is %d", syscall.Getpid())
+	boot.InitApp()
+
+	// 创建 HTTP 服务器
+	srv := &http.Server{
+		Addr:    config.AppAddr,
+		Handler: routers.InitRouter(),
 	}
-	err := server.ListenAndServe()
-	if err != nil {
-		log.Loger.Printf("Actual pid is %d", syscall.Getpid())
+	// 异步启动 HTTP 服务器
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	// 等待中断信号以优雅地关闭服务器（设置 5 秒的超时时间）
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Println("Shutdown Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server Shutdown:", err)
 	}
+	log.Println("Server exiting")
 }

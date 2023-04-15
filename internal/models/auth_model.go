@@ -1,5 +1,7 @@
 package models
 
+import "gin-web/global"
+
 type Auth struct {
 	ID       int    `gorm:"primary_key" json:"id"`
 	Username string `json:"username"`
@@ -16,7 +18,7 @@ func (m *Auth) TableName() string {
 
 func (m *Auth) CheckAuth(username, password string) bool {
 	var auth Auth
-	db.Select("id").Where(Auth{Username: username, Password: password}).First(&auth)
+	global.BlogDB.Select("id").Where(Auth{Username: username, Password: password}).First(&auth)
 	if auth.ID > 0 {
 		return true
 	}
