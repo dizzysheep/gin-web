@@ -1,27 +1,27 @@
-package service
+package redis
 
 import (
-	"github.com/yangxx0612/plugins/config"
+	"gin-web/core/config"
 	"strconv"
 )
 
-type RedisService struct {
+type RedisKey struct {
 	Delimiter  string
 	ModuleName string
 }
 
-func NewRedisService(moduleName string) *RedisService {
-	return &RedisService{
+func NewRedisService(moduleName string) *RedisKey {
+	return &RedisKey{
 		Delimiter:  ".",
 		ModuleName: moduleName,
 	}
 }
 
-func (s *RedisService) GetPrefix() string {
+func (s *RedisKey) GetPrefix() string {
 	return config.AppName + s.Delimiter + s.ModuleName
 }
 
-func (s *RedisService) GetDetailKey(id int) string {
+func (s *RedisKey) GetDetailKey(id int) string {
 	cacheKey := s.GetPrefix() + s.Delimiter + "id" + s.Delimiter + strconv.Itoa(id)
 	return cacheKey
 }

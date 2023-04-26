@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gin-web/core/config"
 	"github.com/go-redis/redis"
-	"github.com/yangxx0612/plugins/config"
 	"time"
 )
 

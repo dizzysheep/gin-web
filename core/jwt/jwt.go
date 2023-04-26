@@ -2,8 +2,8 @@ package util
 
 import (
 	"errors"
+	"gin-web/core/config"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/yangxx0612/plugins/config"
 	"time"
 )
 

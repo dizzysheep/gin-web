@@ -1,9 +1,9 @@
 package boot
 
 import (
+	"gin-web/core/mysql"
 	"gin-web/core/redis"
 	"gin-web/global"
-	"github.com/yangxx0612/plugins/mysql"
 )
 
 func InitApp() {

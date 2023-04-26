@@ -4,7 +4,7 @@ import (
 	"context"
 	"gin-web/app/routers"
 	"gin-web/core/boot"
-	"github.com/yangxx0612/plugins/config"
+	"gin-web/core/config"
 	"log"
 	"net/http"
 	"os"
