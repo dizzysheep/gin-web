@@ -1,5 +1,5 @@
 package global
 
-import "github.com/jinzhu/gorm"
+import "gorm.io/gorm"
 
 var BlogDB *gorm.DB

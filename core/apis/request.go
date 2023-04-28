@@ -34,7 +34,7 @@ func Get(uri string, args ...interface{}) *netlib.HTTPRequest {
 			url += "?" + queryStr.Encode()
 		}
 	}
-	req := netlib.Get(url).SetTimeout(netlib.DEFAULT_CONNECT_TIME, api.GetTimeOut())
+	req := netlib.Get(url).SetTimeout(netlib.DefaultConnectTime, api.GetTimeOut())
 	return req
 }
 
@@ -42,7 +42,7 @@ func Get(uri string, args ...interface{}) *netlib.HTTPRequest {
 func PostForm(uri string, args ...interface{}) *netlib.HTTPRequest {
 	api := GetApi(uri)
 	url := api.Uri()
-	req := netlib.Post(url).SetTimeout(netlib.DEFAULT_CONNECT_TIME, api.GetTimeOut())
+	req := netlib.Post(url).SetTimeout(netlib.DefaultConnectTime, api.GetTimeOut())
 	data := api.BandData(args...)
 	if len(*data) > 0 {
 		for k, v := range *data {
@@ -57,7 +57,7 @@ func PostRaw(uri string, args ...interface{}) *netlib.HTTPRequest {
 	api := GetApi(uri)
 	url := api.Uri()
 
-	req := netlib.Post(url).SetTimeout(netlib.DEFAULT_CONNECT_TIME, api.GetTimeOut())
+	req := netlib.Post(url).SetTimeout(netlib.DefaultConnectTime, api.GetTimeOut())
 	req.JSONBody(api.BandData(args...))
 	return req
 }
@@ -67,7 +67,7 @@ func Put(uri string, args ...interface{}) *netlib.HTTPRequest {
 	api := GetApi(uri)
 	url := api.Uri()
 
-	req := netlib.Put(url).SetTimeout(netlib.DEFAULT_CONNECT_TIME, api.GetTimeOut())
+	req := netlib.Put(url).SetTimeout(netlib.DefaultConnectTime, api.GetTimeOut())
 	req.JSONBody(api.BandData(args...))
 	return req
 }
@@ -77,7 +77,7 @@ func Patch(uri string, args ...interface{}) *netlib.HTTPRequest {
 	api := GetApi(uri)
 	url := api.Uri()
 
-	req := netlib.Patch(url).SetTimeout(netlib.DEFAULT_CONNECT_TIME, api.GetTimeOut())
+	req := netlib.Patch(url).SetTimeout(netlib.DefaultConnectTime, api.GetTimeOut())
 	req.JSONBody(api.BandData(args...))
 	return req
 }
@@ -87,7 +87,7 @@ func Delete(uri string, args ...interface{}) *netlib.HTTPRequest {
 	api := GetApi(uri)
 	url := api.Uri()
 
-	req := netlib.Delete(url).SetTimeout(netlib.DEFAULT_CONNECT_TIME, api.GetTimeOut())
+	req := netlib.Delete(url).SetTimeout(netlib.DefaultConnectTime, api.GetTimeOut())
 	req.JSONBody(api.BandData(args...))
 	return req
 }
@@ -96,7 +96,7 @@ func Delete(uri string, args ...interface{}) *netlib.HTTPRequest {
 func DeleteForm(uri string, args ...interface{}) *netlib.HTTPRequest {
 	api := GetApi(uri)
 	url := api.Uri()
-	req := netlib.Delete(url).SetTimeout(netlib.DEFAULT_CONNECT_TIME, api.GetTimeOut())
+	req := netlib.Delete(url).SetTimeout(netlib.DefaultConnectTime, api.GetTimeOut())
 
 	data := api.BandData(args...)
 
@@ -113,7 +113,7 @@ func Head(uri string, args ...interface{}) *netlib.HTTPRequest {
 	api := GetApi(uri)
 	url := api.Uri()
 
-	req := netlib.Head(url).SetTimeout(netlib.DEFAULT_CONNECT_TIME, api.GetTimeOut())
+	req := netlib.Head(url).SetTimeout(netlib.DefaultConnectTime, api.GetTimeOut())
 	req.JSONBody(api.BandData(args...))
 	return req
 }

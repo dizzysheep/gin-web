@@ -1,18 +1,17 @@
 package dao
 
 import (
-	"gin-web/global"
 	"gin-web/internal/dto"
 	"gin-web/internal/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type ArticleDao struct {
 	*gorm.DB
 }
 
-func NewArticleDao() *ArticleDao {
-	return &ArticleDao{global.BlogDB}
+func NewArticleDao(db *gorm.DB) *ArticleDao {
+	return &ArticleDao{db}
 }
 
 func (dao *ArticleDao) CreateArticle(article *models.Article) (int, error) {
@@ -38,7 +37,7 @@ func (dao *ArticleDao) DeleteArticle(id int) error {
 	return dao.Where("id = ?", id).Delete(&models.Article{}).Error
 }
 
-func (dao *ArticleDao) GetArticleByPage(req dto.SearchArticleReqDTO, pageNo, pageSize int) (total int, list []models.Article, err error) {
+func (dao *ArticleDao) GetArticleByPage(req dto.SearchArticleReqDTO, pageNo, pageSize int) (total int64, list []models.Article, err error) {
 	dao.SetCondition(req)
 	offset := (pageNo - 1) * pageSize
 	err = dao.Find(&list).Limit(pageSize).Offset(offset).Count(&total).Error

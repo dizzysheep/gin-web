@@ -54,7 +54,7 @@ func NewFileHook() {
 	// 配置 lfshook
 	hook := lfshook.NewHook(writeMap, &logrus.JSONFormatter{
 		FieldMap: logrus.FieldMap{
-			logrus.FieldKeyTime:  "@time",
+			logrus.FieldKeyTime:  "time",
 			logrus.FieldKeyLevel: "level",
 			logrus.FieldKeyMsg:   "message",
 		},

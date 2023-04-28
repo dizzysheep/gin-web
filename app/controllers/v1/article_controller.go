@@ -2,7 +2,6 @@ package v1
 
 import (
 	"gin-web/core/ginc"
-	"gin-web/core/result"
 	"gin-web/internal/dto"
 	"gin-web/internal/service"
 	"github.com/gin-gonic/gin"
@@ -30,7 +29,7 @@ func (ac *ArticleController) GetArticle(c *gin.Context) {
 		ginc.Fail(c, "ID必须大于0")
 		return
 	}
-	articleDetail, err := service.NewArticleService().GetArticle(id)
+	articleDetail, err := service.NewArticleService(c).GetArticle(id)
 	if err != nil {
 		ginc.Fail(c, "文章信息不存在")
 		return
@@ -47,19 +46,19 @@ func (ac *ArticleController) GetArticles(c *gin.Context) {
 	}
 
 	page, size := ginc.GetPage(c), ginc.GetPageSize(c)
-	total, list, err := service.NewArticleService().GetListByPage(req, page, size)
+	total, list, err := service.NewArticleService(c).GetListByPage(req, page, size)
 	if err != nil {
 		ginc.Fail(c, "获取文章列表失败")
 		return
 	}
 
-	pageInfo := &result.PageInfo{
+	pageInfo := &ginc.PageInfo{
 		Total: total,
 		List:  list,
 		Page:  page,
 		Size:  size,
 	}
-	ginc.Page(c, pageInfo)
+	ginc.Ok(c, pageInfo)
 }
 
 // CreateArticle 新增文章
@@ -69,7 +68,7 @@ func (ac *ArticleController) CreateArticle(c *gin.Context) {
 		ginc.Fail(c, err.Error())
 		return
 	}
-	id, err := service.NewArticleService().CreateArticle(req)
+	id, err := service.NewArticleService(c).CreateArticle(req)
 	if err != nil {
 		ginc.Fail(c, err.Error())
 		return
@@ -89,7 +88,7 @@ func (ac *ArticleController) DeleteArticle(c *gin.Context) {
 		return
 	}
 
-	err := service.NewArticleService().DeleteArticle(id)
+	err := service.NewArticleService(c).DeleteArticle(id)
 	if err != nil {
 		ginc.Fail(c, err.Error())
 		return

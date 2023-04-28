@@ -11,7 +11,7 @@ import (
 
 var RedisClient *redis.Client
 
-func NewClient() *redis.Client {
+func InitRedis() *redis.Client {
 	if RedisClient != nil {
 		return RedisClient
 	}
@@ -26,10 +26,6 @@ func NewClient() *redis.Client {
 		fmt.Println("redis connection failed: ", err.Error())
 	}
 	return RedisClient
-}
-
-func RedisSetup() {
-	NewClient()
 }
 
 func SaveStruct(key string, data interface{}, second time.Duration) error {

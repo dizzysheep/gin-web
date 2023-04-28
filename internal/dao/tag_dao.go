@@ -1,18 +1,17 @@
 package dao
 
 import (
-	"gin-web/global"
 	"gin-web/internal/dto"
 	"gin-web/internal/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type TagDao struct {
 	*gorm.DB
 }
 
-func NewTagDao() *TagDao {
-	return &TagDao{global.BlogDB}
+func NewTagDao(db *gorm.DB) *TagDao {
+	return &TagDao{db}
 }
 
 func (dao *TagDao) CreateTag(tag *models.Tag) (int, error) {
@@ -34,7 +33,7 @@ func (dao *TagDao) ExistTagByName(name string) bool {
 	return true
 }
 
-func (dao *TagDao) GetTagByPage(req dto.SearchTagReqDTO, pageNo, pageSize int) (total int, list []models.Tag, err error) {
+func (dao *TagDao) GetTagByPage(req dto.SearchTagReqDTO, pageNo, pageSize int) (total int64, list []models.Tag, err error) {
 	dao.SetCondition(req)
 	offset := (pageNo - 1) * pageSize
 	err = dao.Find(&list).Limit(pageSize).Offset(offset).Count(&total).Error
@@ -54,4 +53,8 @@ func (dao *TagDao) SetCondition(req dto.SearchTagReqDTO) {
 	if req.State != nil {
 		dao.DB = dao.Where("state = ?", req.State)
 	}
+}
+
+func (dao *TagDao) UpdateInfoById(id int, data map[string]interface{}) error {
+	return dao.Where("id = ?", id).Updates(data).Error
 }

@@ -2,9 +2,7 @@ package v1
 
 import (
 	"gin-web/core/ginc"
-	"gin-web/core/result"
 	"gin-web/internal/dto"
-	"gin-web/internal/models"
 	"gin-web/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -32,19 +30,19 @@ func (tc *TagController) GetTags(c *gin.Context) {
 	}
 
 	page, size := ginc.GetPage(c), ginc.GetPageSize(c)
-	total, list, err := service.NewTagService().GetListByPage(req, page, size)
+	total, list, err := service.NewTagService(c).GetListByPage(req, page, size)
 	if err != nil {
 		ginc.Fail(c, err.Error())
 		return
 	}
 
-	pageInfo := &result.PageInfo{
+	pageInfo := &ginc.PageInfo{
 		Total: total,
 		List:  list,
 		Page:  page,
 		Size:  size,
 	}
-	ginc.Page(c, pageInfo)
+	ginc.Ok(c, pageInfo)
 }
 
 // CreateTag
@@ -61,7 +59,7 @@ func (tc *TagController) CreateTag(c *gin.Context) {
 		ginc.Fail(c, err.Error())
 		return
 	}
-	id, err := service.NewTagService().CreateTag(req)
+	id, err := service.NewTagService(c).CreateTag(req)
 	if err != nil {
 		ginc.Fail(c, err.Error())
 		return
@@ -72,12 +70,12 @@ func (tc *TagController) CreateTag(c *gin.Context) {
 
 // EditTag 修改文章标签
 func (tc *TagController) EditTag(c *gin.Context) {
-	var req dto.EditTagReqDTO
+	var req dto.UpdateTagReqDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ginc.Fail(c, err.Error())
 		return
 	}
-	err := service.NewTagService().EditTag(req)
+	err := service.NewTagService(c).UpdateTag(req)
 	if err != nil {
 		ginc.Fail(c, err.Error())
 		return
@@ -92,6 +90,6 @@ func (tc *TagController) DeleteTag(c *gin.Context) {
 		ginc.Fail(c, "id参数不合法")
 		return
 	}
-	models.NewTag().DeleteTag(id)
+	service.NewTagService(c).DeleteTag(id)
 	ginc.Ok(c, nil)
 }

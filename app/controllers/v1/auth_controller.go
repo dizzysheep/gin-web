@@ -16,23 +16,23 @@ func NewAuthController() *AuthController {
 }
 
 func (ac *AuthController) Router(router *gin.RouterGroup) {
-	//获取token
-	router.POST("/auth", ac.GetAuth)
+	router.POST("/auth", ac.GetAuth) //获取token
 }
 
 func (ac *AuthController) GetAuth(c *gin.Context) {
 	var req dto.AuthReqDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
+		ginc.Fail(c, "参数验证失败:"+err.Error())
+		return
+	}
+
+	auth, err := service.NewAuthService(c).CheckAuth(req)
+	if err != nil {
 		ginc.Fail(c, err.Error())
 		return
 	}
 
-	if err := service.NewAuthService().CheckAuth(req); err != nil {
-		ginc.Fail(c, err.Error())
-		return
-	}
-
-	token, err := util.GenerateToken(req.Username, req.Password)
+	token, err := jwt.GenerateToken(auth.ID)
 	if err != nil {
 		ginc.Fail(c, "生成token失败")
 		return

@@ -85,45 +85,10 @@ func Get(c *gin.Context) (log Logger) {
 		return Loger
 	}
 
-	path := c.Request.URL.Path
-	method := c.Request.Method
-	raw := c.Request.URL.RawQuery
-
-	//参数获取，兼容各种格式的请求
-	request_param := ""
-	if method == "GET" {
-		request_param = raw
-	} else if method == "POST" {
-		if ct, ok := c.Request.Header["Content-Type"]; ok && ct[0] == "application/json" {
-			raw, _ := c.GetRawData()
-			request_param = string(raw)
-		} else {
-			//form格式
-			_ = c.Request.ParseMultipartForm(128)
-			data := c.Request.Form
-			for k, v := range data {
-				if len(v) == 1 {
-					request_param += fmt.Sprintf("%s=%v&", k, v[0])
-				} else {
-					request_param += fmt.Sprintf("%s=%v&", k, v)
-				}
-			}
-		}
-	}
-
-	//请求时间戳（毫秒数）
-	var microTime int64 = 0
-	microTimeInterface, exists := c.Get(StartMicroTime)
-	if exists {
-		microTime = microTimeInterface.(int64)
-	}
-
 	return logrus.WithFields(logrus.Fields{
-		"is_gin":        true,
-		"trace_id":      ginc.GetTraceID(c),
-		"method":        method,
-		"path":          fmt.Sprintf("【%s】%s", method, path),
-		"request_param": request_param,
-		"microtime":     microTime,
+		"is_gin":   true,
+		"trace_id": ginc.GetTraceID(c),
+		"method":   c.Request.Method,
+		"path":     c.Request.URL.Path,
 	})
 }

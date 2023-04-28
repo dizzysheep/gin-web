@@ -1,7 +1,6 @@
 package log
 
 import (
-	"gin-web/core/result"
 	"github.com/gin-gonic/gin"
 	"net"
 	"net/http"
@@ -37,10 +36,10 @@ func RecoveryWithWriter(c *gin.Context, err interface{}) {
 
 	// If the connection is dead, we can't write a status to it.
 	if brokenPipe {
-		c.Error(err.(error)) // nolint: errcheck
+		_ = c.Error(err.(error)) // nolint: errcheck
 		c.Abort()
 	} else {
-		c.JSON(http.StatusInternalServerError, result.Fail("抱歉服务错误，请稍后重试"))
+		c.JSON(http.StatusInternalServerError, "抱歉服务错误，请稍后重试")
 		c.Abort()
 	}
 }

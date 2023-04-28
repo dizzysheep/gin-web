@@ -19,18 +19,24 @@ require (
 )
 
 require (
+	github.com/SkyAPM/go2sky v1.5.0
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/spf13/viper v1.10.1
+	github.com/stretchr/objx v0.4.0
 	github.com/tracer0tong/kafkalogrus v0.0.0-20180816014403-290bb4d4d549
+	gopkg.in/yaml.v2 v2.4.0
+	gorm.io/driver/mysql v1.5.0
+	gorm.io/gorm v1.25.0
+	skywalking.apache.org/repo/goapi v0.0.0-20220401015832-2c9eee9481eb
 )
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
-	github.com/SkyAPM/go2sky v1.5.0 // indirect
+	github.com/SkyAPM/go2sky-plugins/gin/v3 v3.0.0-20230423094324-2c881c0d8e6a // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230111030713-bf00bc1b83b6 // indirect
@@ -44,7 +50,7 @@ require (
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
-	github.com/go-sql-driver/mysql v1.5.0 // indirect
+	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
@@ -57,6 +63,7 @@ require (
 	github.com/jcmturner/gokrb5/v8 v8.4.3 // indirect
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jonboulle/clockwork v0.3.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -90,6 +97,4 @@ require (
 	google.golang.org/grpc v1.43.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
-	skywalking.apache.org/repo/goapi v0.0.0-20220401015832-2c9eee9481eb // indirect
 )

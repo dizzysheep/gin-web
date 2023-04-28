@@ -1,17 +1,16 @@
 package dao
 
 import (
-	"gin-web/global"
 	"gin-web/internal/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type AuthDao struct {
 	*gorm.DB
 }
 
-func NewAuthDao() *AuthDao {
-	return &AuthDao{global.BlogDB}
+func NewAuthDao(db *gorm.DB) *AuthDao {
+	return &AuthDao{db}
 }
 
 func (dao *AuthDao) GetInfoByUserName(username string) (*models.Auth, error) {

@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"gin-web/app/routers"
-	"gin-web/core/boot"
 	"gin-web/core/config"
+	"gin-web/pkg/boostrap"
 	"log"
 	"net/http"
 	"os"
@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	boot.InitApp()
+	boostrap.InitApp()
 
 	// 创建 HTTP 服务器
 	srv := &http.Server{

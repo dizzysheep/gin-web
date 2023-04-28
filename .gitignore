@@ -1,5 +1,5 @@
 vendor
 runtime
 **/.idea/
-/config/
+/config/app.toml
 go.sum

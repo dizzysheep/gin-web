@@ -1,4 +1,4 @@
-package boot
+package boostrap
 
 import (
 	"gin-web/core/mysql"
@@ -7,10 +7,12 @@ import (
 )
 
 func InitApp() {
-	InitDB()
-	redis.RedisSetup()
+	//数据库连接
+	initDBEngine()
+	redis.InitRedis()
+	//skywalking.InitSkyWalking()
 }
 
-func InitDB() {
+func initDBEngine() {
 	global.BlogDB = mysql.GetMysql("blog")
 }
