@@ -432,17 +432,17 @@ func (b *HTTPRequest) buildURL(paramBody string) {
 				for formname, filename := range b.files {
 					fileWriter, err := bodyWriter.CreateFormFile(formname, filename)
 					if err != nil {
-						log.Loger.Println("Httplib:", err)
+						log.Get(b.ctx).Println("Httplib:", err)
 					}
 					fh, err := os.Open(filename)
 					if err != nil {
-						log.Loger.Println("Httplib:", err)
+						log.Get(b.ctx).Println("Httplib:", err)
 					}
 					//iocopy
 					_, err = io.Copy(fileWriter, fh)
 					fh.Close()
 					if err != nil {
-						log.Loger.Println("Httplib:", err)
+						log.Get(b.ctx).Println("Httplib:", err)
 					}
 				}
 				for k, v := range b.params {
