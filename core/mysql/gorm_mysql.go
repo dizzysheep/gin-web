@@ -7,6 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"log"
+	"os"
 	"sync"
 	"time"
 )
@@ -26,9 +29,23 @@ func GetMysql(dbName string) *gorm.DB {
 	}
 
 	dbConf := config.NewDbConfig(dbName)
-	db, err = gorm.Open(mysql.Open(dbConf.Dsn), &gorm.Config{
-		Logger: NewGormLogger(),
-	})
+	var configOption *gorm.Config
+	if config.IsDevEnv {
+		newLogger := logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags), // 输出目标
+			logger.Config{
+				SlowThreshold:             time.Second, // 慢查询阈值
+				LogLevel:                  logger.Info, // 日志级别
+				IgnoreRecordNotFoundError: true,        // 忽略ErrRecordNotFound错误
+				Colorful:                  true,        // 开启彩色输出
+			},
+		)
+		configOption = &gorm.Config{Logger: newLogger}
+	} else {
+		configOption = &gorm.Config{Logger: NewGormLogger()}
+	}
+
+	db, err = gorm.Open(mysql.Open(dbConf.Dsn), configOption)
 	if err != nil {
 		panic(err.Error())
 	}

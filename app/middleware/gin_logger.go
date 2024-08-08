@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"fmt"
+	"gin-web/core/config"
 	"gin-web/core/log"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -27,7 +28,7 @@ func (w responseWriter) Write(b []byte) (int, error) {
 func GinLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//屏蔽调健康监测日志
-		if c.Request.RequestURI == "/api/healthz" {
+		if c.Request.RequestURI == "/api/healthz" || config.IsDevEnv {
 			return
 		}
 

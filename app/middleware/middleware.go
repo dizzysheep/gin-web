@@ -9,8 +9,9 @@ func UserIn(g *gin.Engine) {
 	g.Use(Recovery())
 	g.Use(Cors())
 	g.Use(SetRequestID())
-	g.Use(GinLogger())
 	if config.IsDevEnv {
-
+		g.Use(gin.Logger())
+	} else {
+		g.Use(GinLogger())
 	}
 }

@@ -105,7 +105,7 @@ func LoadApp() {
 	DbMode = viper.GetBool("log.dbMode")
 	LogFormatter = viper.GetString("log.logFormatter")
 	LogLevel = viper.GetString("log.LogLevel")
-	if LogLevel == "dev" {
+	if Env == "dev" {
 		IsDevEnv = true
 	}
 	// skywalking服务器配置
