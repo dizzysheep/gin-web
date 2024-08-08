@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-//敏感变量名(大小写不敏感)
+// 敏感变量名(大小写不敏感)
 var SensitiveWords = []string{
 	"password",
 	"mobile",

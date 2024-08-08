@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"gin-web/core/ginc"
 	"gin-web/core/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cast"
@@ -12,20 +11,20 @@ func JWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenHeader := c.Request.Header.Get("Authorization")
 		if tokenHeader == "" {
-			ginc.Fail(c, "token不存在")
+			//response.Fail(c, "token不存在")
 			c.Abort()
 			return
 		}
 
 		checkToken := strings.Split(tokenHeader, " ")
 		if len(checkToken) == 0 {
-			ginc.Fail(c, "无效token")
+			//ginc.Fail(c, "无效token")
 			c.Abort()
 			return
 		}
 
 		if len(checkToken) != 2 || checkToken[0] != "Bearer" {
-			ginc.Fail(c, "无效token")
+			//ginc.Fail(c, "无效token")
 			c.Abort()
 			return
 		}
@@ -33,12 +32,12 @@ func JWT() gin.HandlerFunc {
 		claims, err := jwt.ParseToken(checkToken[1])
 		if err != nil {
 			if err == jwt.TokenExpired {
-				ginc.Fail(c, "token已过期")
+				//ginc.Fail(c, "token已过期")
 				c.Abort()
 				return
 			}
 
-			ginc.Fail(c, "无效token")
+			//ginc.Fail(c, "无效token")
 			c.Abort()
 			return
 		}

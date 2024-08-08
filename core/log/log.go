@@ -2,8 +2,8 @@ package log
 
 import (
 	"fmt"
+	"gin-web/app/ext"
 	"gin-web/core/config"
-	"gin-web/core/ginc"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net"
@@ -87,7 +87,7 @@ func Get(c *gin.Context) (log Logger) {
 
 	return logrus.WithFields(logrus.Fields{
 		"is_gin":   true,
-		"trace_id": ginc.GetTraceID(c),
+		"trace_id": ext.GetRequestIDByGin(c),
 		"method":   c.Request.Method,
 		"path":     c.Request.URL.Path,
 	})
