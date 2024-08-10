@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gin-web/internal/errcode"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"net/http"
@@ -27,20 +28,20 @@ func BuildResponse(code int, msg string, data interface{}) *Response {
 }
 
 func Ok(c *gin.Context, data interface{}) {
-	res := BuildResponse(SuccessOk.Code(), SuccessOk.String(), data)
+	res := BuildResponse(errcode.SuccessOk.Code(), errcode.SuccessOk.String(), data)
 	c.JSON(http.StatusOK, res)
 }
 
-func Fail(c *gin.Context, code ErrCode) {
+func Fail(c *gin.Context, code errcode.ErrCode) {
 	res := BuildResponse(code.Code(), code.String(), nil)
 	c.JSON(http.StatusOK, res)
 }
 
 func FailErr(c *gin.Context, err error) {
-	code := ErrFail.Code()
+	code := errcode.ErrFail.Code()
 	msg := err.Error()
 
-	var customErr *CustomError
+	var customErr *errcode.CustomError
 	if errors.As(err, &customErr) {
 		code = customErr.Code.Code()
 		if customErr.Message != "" {
@@ -55,13 +56,13 @@ func FailErr(c *gin.Context, err error) {
 }
 
 func InternalServerError(c *gin.Context) {
-	res := BuildResponse(ErrFail.Code(), ErrFail.String(), nil)
+	res := BuildResponse(errcode.ErrFail.Code(), errcode.ErrFail.String(), nil)
 	c.JSON(http.StatusOK, res)
 }
 
 func BadRequest(c *gin.Context, errs ...error) {
 	if len(errs) == 0 {
-		Fail(c, ErrInvalidParams)
+		Fail(c, errcode.ErrInvalidParams)
 		return
 	}
 
@@ -70,7 +71,7 @@ func BadRequest(c *gin.Context, errs ...error) {
 		fieldErrs = append(fieldErrs, handleError(err)...)
 	}
 
-	res := BuildResponse(ErrInvalidParams.Code(), ErrInvalidParams.String(), nil)
+	res := BuildResponse(errcode.ErrInvalidParams.Code(), errcode.ErrInvalidParams.String(), nil)
 	if len(fieldErrs) > 0 {
 		res.Msg = fieldErrs[0].Message
 	}

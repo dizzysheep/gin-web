@@ -30,3 +30,48 @@ func (h *TagHandler) List(c *gin.Context) {
 
 	response.Ok(c, respDTO.ToVO())
 }
+
+func (h *TagHandler) Add(c *gin.Context) {
+	reqDTO, err := dto.AddTagReqToDTO(c)
+	if err != nil {
+		response.BadRequest(c, err)
+		return
+	}
+
+	if err := h.service.Tag.Add(c.Request.Context(), reqDTO); err != nil {
+		response.FailErr(c, err)
+		return
+	}
+
+	response.Ok(c, "success")
+}
+
+func (h *TagHandler) Edit(c *gin.Context) {
+	reqDTO, err := dto.EditTagReqToDTO(c)
+	if err != nil {
+		response.BadRequest(c, err)
+		return
+	}
+
+	if err := h.service.Tag.Edit(c.Request.Context(), reqDTO); err != nil {
+		response.FailErr(c, err)
+		return
+	}
+
+	response.Ok(c, "success")
+}
+
+func (h *TagHandler) Del(c *gin.Context) {
+	reqDTO, err := dto.IDReqDTOFromRequest(c)
+	if err != nil {
+		response.BadRequest(c, err)
+		return
+	}
+
+	if err := h.service.Tag.Del(c.Request.Context(), reqDTO); err != nil {
+		response.FailErr(c, err)
+		return
+	}
+
+	response.Ok(c, "success")
+}

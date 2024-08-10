@@ -2,10 +2,10 @@ package model
 
 type Tag struct {
 	Model
-	Name       string `json:"name"`
-	CreatedBy  string `json:"created_by"`
-	ModifiedBy string `json:"modified_by"`
-	State      int8   `json:"state"`
+	Name       string `gorm:"column:name"`
+	State      int8   `gorm:"column:state"`
+	CreateUser string `gorm:"column:create_user"`
+	UpdateUser string `gorm:"column:update_user"`
 }
 
 func (m *Tag) TableName() string {

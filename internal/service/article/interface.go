@@ -7,4 +7,5 @@ import (
 
 type ArticleService interface {
 	List(ctx context.Context, reqDTO *dto.ListArticleReqDTO) (*dto.ListArticleRespDTO, error)
+	Add(ctx context.Context, reqDTO *dto.AddArticleReqDTO) error
 }

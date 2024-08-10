@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"gin-web/core/jwt"
 	"gin-web/dto"
 	"gin-web/internal/dao"
 	"gin-web/internal/dao/common"
@@ -32,7 +33,12 @@ func (s *authService) Login(ctx context.Context, req *dto.LoginReqDTO) (*dto.Log
 		return nil, errors.New("邮箱或者密码不正确")
 	}
 
+	token, err := jwt.GenerateToken(user)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.LoginRespDTO{
-		AuthPO: user,
+		Jwt: token,
 	}, nil
 }

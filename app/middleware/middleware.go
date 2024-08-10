@@ -6,12 +6,11 @@ import (
 )
 
 func UserIn(g *gin.Engine) {
-	g.Use(Recovery())
 	g.Use(Cors())
 	g.Use(SetRequestID())
 	if config.IsDevEnv {
-		g.Use(gin.Logger())
+		g.Use(gin.Logger(), gin.Recovery())
 	} else {
-		g.Use(GinLogger())
+		g.Use(GinLogger(), Recovery())
 	}
 }

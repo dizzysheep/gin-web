@@ -2,11 +2,10 @@ package model
 
 import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"time"
 )
 
 type Model struct {
-	ID        int64     `gorm:"primary_key" json:"id"`
-	CreatedAt time.Time `gorm:"create_time"`
-	UpdatedAt time.Time `gorm:"update_time"`
+	ID        int64 `gorm:"column:id"`
+	CreatedAt int64 `gorm:"column:create_time"`
+	UpdatedAt int64 `gorm:"column:update_time"`
 }

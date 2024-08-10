@@ -7,7 +7,7 @@ import (
 	"gin-web/internal/dao/common"
 	"gin-web/internal/model"
 	"github.com/pkg/errors"
-	"sync"
+	"golang.org/x/sync/errgroup"
 )
 
 type tagService struct {
@@ -21,38 +21,33 @@ func NewTagService(daos *dao.Daos) TagService {
 func (s *tagService) List(ctx context.Context, reqDTO *dto.ListTagReqDTO) (*dto.ListTagRespDTO, error) {
 	var (
 		err    error
-		errs   []error
 		total  int64
 		tagPOs []*model.Tag
-		wg     sync.WaitGroup
+		eg     errgroup.Group
 	)
 
 	conditions := common.GormConditions{}
 	pager := &common.Pagination{Offset: reqDTO.Offset, PageSize: reqDTO.PageSize}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	eg.Go(func() error {
 		total, err = s.daos.Tag.Count(ctx, conditions)
 		if err != nil {
-			errs = append(errs, errors.Wrap(err, "查询总数失败"))
-			return
+			return errors.Wrap(err, "select tag count")
 		}
-	}()
+		return nil
+	})
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	eg.Go(func() error {
 		tagPOs, err = s.daos.Tag.SelectMany(ctx, conditions, pager)
 		if err != nil {
-			errs = append(errs, errors.Wrap(err, "查询总数失败"))
-			return
+			return errors.Wrap(err, "select tag list")
 		}
-	}()
+		return nil
+	})
 
-	wg.Wait()
-	if len(errs) > 0 {
-		return nil, errs[0]
+	err = eg.Wait()
+	if err != nil {
+		return nil, err
 	}
 
 	reqDTO.Pager.Total = total
@@ -62,28 +57,35 @@ func (s *tagService) List(ctx context.Context, reqDTO *dto.ListTagReqDTO) (*dto.
 	}, nil
 }
 
-// CreateTag ---创建标签tag---
-//func (svc *tagService) CreateTag(req dto.CreateTagReqDTO) (int, error) {
-//if svc.dao.ExistTagByName(req.Name) {
-//	return 0, errors.New("标签已存在")
-//}
-//
-//return svc.dao.CreateTag(&model.Tag{
-//	Name:      req.Name,
-//	CreatedBy: req.CreatedBy,
-//	State:     req.State,
-//})
-//}
+func (s *tagService) Add(ctx context.Context, reqDTO *dto.AddTagReqDTO) error {
+	tagPO := &model.Tag{
+		Name:       reqDTO.Name,
+		State:      *reqDTO.State,
+		CreateUser: reqDTO.Username,
+		UpdateUser: reqDTO.Username,
+	}
+	if err := s.daos.Tag.InsertOne(ctx, tagPO); err != nil {
+		return errors.Wrap(err, "add tag fail")
+	}
+	return nil
+}
 
-//func (svc *tagService) UpdateTag(tag dto.UpdateTagReqDTO) error {
-//	return svc.dao.UpdateInfoById(tag.Id, map[string]interface{}{
-//		"name":        tag.Name,
-//		"state":       tag.State,
-//		"modified_by": tag.ModifiedBy,
-//	})
-//}
-//
-//func (svc *tagService) DeleteTag(id int) error {
-//	return svc.dao.Delete(id).Error
-//
-//}
+func (s *tagService) Edit(ctx context.Context, reqDTO *dto.EditTagReqDTO) error {
+	po, err := s.daos.Tag.SelectOne(ctx, reqDTO.ID)
+	if err != nil {
+		return errors.Wrap(err, "select tag fail")
+	}
+
+	po.Name = reqDTO.Name
+	po.State = *reqDTO.State
+	po.UpdateUser = reqDTO.Username
+	if err := s.daos.Tag.UpdateOne(ctx, po); err != nil {
+		return errors.Wrap(err, "edit tag fail")
+	}
+
+	return nil
+}
+
+func (s *tagService) Del(ctx context.Context, reqDTO *dto.IDReqDTO) error {
+	return nil
+}

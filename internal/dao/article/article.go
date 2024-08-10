@@ -23,7 +23,7 @@ func (dao *articleDao) Count(ctx context.Context, conditions common.GormConditio
 
 func (dao *articleDao) SelectMany(ctx context.Context, conditions common.GormConditions, pager *common.Pagination) ([]*model.Article, error) {
 	var list []*model.Article
-	tx := dao.WithContext(ctx).Model(&model.Article{}).Scopes(conditions.BuildConditions)
+	tx := dao.WithContext(ctx).Model(&model.Article{}).Preload("Tag").Scopes(conditions.BuildConditions)
 	if pager != nil {
 		tx.Scopes(pager.Paginate())
 	}

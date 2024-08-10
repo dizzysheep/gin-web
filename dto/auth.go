@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"gin-web/internal/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,24 +27,13 @@ type LoginReqDTO struct {
 }
 
 type LoginRespDTO struct {
-	AuthPO *model.Auth
+	Jwt string
 }
 
-func (l *LoginRespDTO) ToVO() *AuthVO {
-	return AuthPOToVO(l.AuthPO)
+type LoginResponse struct {
+	Jwt string `json:"jwt"`
 }
 
-type AuthVO struct {
-	ID       int64  `json:"id"`
-	Username string `json:"username"`
-}
-
-func AuthPOToVO(po *model.Auth) *AuthVO {
-	if po == nil {
-		return nil
-	}
-	return &AuthVO{
-		ID:       po.ID,
-		Username: po.Username,
-	}
+func (l *LoginRespDTO) ToVO() *LoginResponse {
+	return &LoginResponse{l.Jwt}
 }

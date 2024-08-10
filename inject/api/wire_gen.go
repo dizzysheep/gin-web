@@ -43,11 +43,13 @@ func NewAppContainer() *AppContainer {
 	healthHandler := handler.NewHealthHandler()
 	tagHandler := handler.NewTagHandler(services)
 	authHandler := handler.NewAuthHandler(services)
+	articleHandler := handler.NewArticleHandler(services)
 	handlers := &handler.Handlers{
-		Common: commonHandler,
-		Health: healthHandler,
-		Tag:    tagHandler,
-		Auth:   authHandler,
+		Common:  commonHandler,
+		Health:  healthHandler,
+		Tag:     tagHandler,
+		Auth:    authHandler,
+		Article: articleHandler,
 	}
 	appContainer := &AppContainer{
 		Handlers: handlers,
