@@ -1,8 +1,8 @@
 package common
 
 import (
-	"fmt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"reflect"
 )
 
@@ -26,9 +26,33 @@ type LikeCond struct {
 
 func (c *LikeCond) BuildCond(query *gorm.DB) *gorm.DB {
 	if c.Value != "" {
-		return query.Where(fmt.Sprintf("%s LIKE ?", c.Field), fmt.Sprintf("%%%s%%", c.Value))
+		return query.Where(clause.Like{
+			Column: clause.Column{Name: c.Field},
+			Value:  "%" + c.Value + "%",
+		})
 	}
 
+	return query
+}
+
+type OrConditions struct {
+	GormCond []GormCond
+}
+
+func (c *OrConditions) BuildCond(query *gorm.DB) *gorm.DB {
+	if len(c.GormCond) == 0 {
+		return query
+	}
+
+	// 使用 OR 组合子条件
+	queryClauses := make([]clause.Expression, 0, len(c.GormCond))
+	for _, cond := range c.GormCond {
+		subQuery := query.Session(&gorm.Session{DryRun: true}) // 使用 DryRun 模式避免实际查询
+		subQuery = cond.BuildCond(subQuery)
+		queryClauses = append(queryClauses, subQuery.Statement.Clauses["WHERE"].Expression)
+	}
+
+	query = query.Where(clause.Or(queryClauses...))
 	return query
 }
 
