@@ -21,7 +21,6 @@ func NewArticleService(daos *dao.Daos) ArticleService {
 func (s *articleService) List(ctx context.Context, reqDTO *dto.ListArticleReqDTO) (*dto.ListArticleRespDTO, error) {
 	var (
 		total      int64
-		err        error
 		articlePOs []*model.Article
 		eg         errgroup.Group
 	)
@@ -30,24 +29,24 @@ func (s *articleService) List(ctx context.Context, reqDTO *dto.ListArticleReqDTO
 	pager := &common.Pagination{Offset: reqDTO.Offset, PageSize: reqDTO.PageSize}
 
 	eg.Go(func() error {
-		total, err = s.daos.Article.Count(ctx, conditions)
+		count, err := s.daos.Article.Count(ctx, conditions)
 		if err != nil {
 			return errors.Wrap(err, "select article count")
 		}
+		total = count
 		return nil
 	})
 
 	eg.Go(func() error {
-		articlePOs, err = s.daos.Article.SelectMany(ctx, conditions, pager)
+		pos, err := s.daos.Article.SelectMany(ctx, conditions, pager)
 		if err != nil {
 			return errors.Wrap(err, "select article list")
 		}
-
+		articlePOs = pos
 		return nil
 	})
 
-	err = eg.Wait()
-	if err != nil {
+	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
 

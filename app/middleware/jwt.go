@@ -33,7 +33,7 @@ func JWT() gin.HandlerFunc {
 		}
 
 		c.Set(ext.UserInfoKey, claims.UserInfo)
-		c.Request.WithContext(context.WithValue(c.Request.Context(), ext.UserInfoKey, claims.UserInfo))
+		c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), ext.UserInfoKey, claims.UserInfo))
 		c.Next()
 	}
 }

@@ -24,7 +24,7 @@ func (dao *tagDao) SelectMany(ctx context.Context, conditions common.GormConditi
 	var list []*model.Tag
 	tx := dao.WithContext(ctx).Model(&model.Tag{}).Scopes(conditions.BuildConditions)
 	if pager != nil {
-		tx.Scopes(pager.Paginate())
+		tx = tx.Scopes(pager.Paginate())
 	}
 	err := tx.Find(&list).Error
 	return list, err
@@ -42,4 +42,8 @@ func (dao *tagDao) InsertOne(ctx context.Context, model *model.Tag) error {
 
 func (dao *tagDao) UpdateOne(ctx context.Context, model *model.Tag) error {
 	return dao.WithContext(ctx).Save(model).Error
+}
+
+func (dao *tagDao) DeleteOne(ctx context.Context, id int64) error {
+	return dao.WithContext(ctx).Where("id = ?", id).Delete(&model.Tag{}).Error
 }

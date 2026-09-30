@@ -4,25 +4,12 @@ import (
 	"fmt"
 	"gin-web/core/config"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
-	"github.com/pkg/errors"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
-	kl "github.com/tracer0tong/kafkalogrus"
 	"os"
 	"path/filepath"
 	"time"
 )
-
-func NewKafkaHook(id string, formatter logrus.Formatter, brokers []string) error {
-	kafkaHook, err := kl.NewKafkaLogrusHook(id, logrus.AllLevels, formatter, brokers, "KafkaInput", true, nil)
-	if err != nil {
-		logrus.Errorf("config es logger error. %+v", errors.WithStack(err))
-		return err
-	}
-
-	logrus.AddHook(kafkaHook)
-	return nil
-}
 
 func NewFileHook() {
 	// 设置输出文件
@@ -33,13 +20,17 @@ func NewFileHook() {
 	filePath := filepath.Join(workPath, config.GetString("log.filePath"))
 
 	// 设置日志切割 rotatelogs
-	writer, _ := rotatelogs.New(
+	writer, err := rotatelogs.New(
 		filePath+"/%Y-%m-%d.log",
 		//日志最大保存时间
 		rotatelogs.WithMaxAge(7*24*time.Hour),
 		//设置日志切割时间间隔(1天)(隔多久分割一次)
 		rotatelogs.WithRotationTime(24*time.Hour),
 	)
+	if err != nil {
+		fmt.Println("init rotate logs err:", err)
+		return
+	}
 
 	// lfshook 决定哪些日志级别可用日志分割
 	writeMap := lfshook.WriterMap{

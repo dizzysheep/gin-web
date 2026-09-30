@@ -4,8 +4,9 @@ import (
 	"errors"
 	"gin-web/core/config"
 	"gin-web/internal/model"
-	jwt "github.com/dgrijalva/jwt-go"
 	"time"
+
+	jwtlib "github.com/golang-jwt/jwt/v5"
 )
 
 var jwtSecret = []byte(config.GetString("jwt.secret"))
@@ -17,46 +18,40 @@ var (
 
 type Claims struct {
 	UserInfo *model.Auth `json:"user_info"`
-	jwt.StandardClaims
+	jwtlib.RegisteredClaims
 }
 
 func GenerateToken(userInfo *model.Auth) (string, error) {
 	validTime := config.GetInt64("jwt.expireTime")
-	expireTime := time.Now().Unix() + validTime
 	claims := Claims{
-		userInfo,
-		jwt.StandardClaims{
-			ExpiresAt: expireTime,
+		UserInfo: userInfo,
+		RegisteredClaims: jwtlib.RegisteredClaims{
+			ExpiresAt: jwtlib.NewNumericDate(time.Now().Add(time.Duration(validTime) * time.Second)),
 			Issuer:    config.AppName,
 		},
 	}
-	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	token, err := tokenClaims.SignedString(jwtSecret)
-	return token, err
+	tokenClaims := jwtlib.NewWithClaims(jwtlib.SigningMethodHS256, claims)
+	return tokenClaims.SignedString(jwtSecret)
 }
 
 func ParseToken(token string) (*Claims, error) {
-	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	tokenClaims, err := jwtlib.ParseWithClaims(token, &Claims{}, func(t *jwtlib.Token) (interface{}, error) {
+		// 限制签名算法，防止算法混淆攻击
+		if _, ok := t.Method.(*jwtlib.SigningMethodHMAC); !ok {
+			return nil, TokenInvalid
+		}
 		return jwtSecret, nil
 	})
-
 	if err != nil {
-		var ve *jwt.ValidationError
-		if errors.As(err, &ve) {
-			if ve.Errors&jwt.ValidationErrorExpired != 0 {
-				return nil, TokenExpired
-			} else {
-				return nil, TokenInvalid
-			}
+		if errors.Is(err, jwtlib.ErrTokenExpired) {
+			return nil, TokenExpired
 		}
+		return nil, TokenInvalid
 	}
 
-	if tokenClaims != nil {
-		if Claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {
-			return Claims, nil
-		}
-		return nil, errors.New("无效token")
+	claims, ok := tokenClaims.Claims.(*Claims)
+	if !ok || !tokenClaims.Valid {
+		return nil, TokenInvalid
 	}
-
-	return nil, err
+	return claims, nil
 }

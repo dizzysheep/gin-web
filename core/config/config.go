@@ -19,7 +19,6 @@ const (
 var (
 	AppName         = "default"
 	AppAddr         = "127.0.0.1:8080"
-	AppPath         = ""
 	Hostname        = "localhost"
 	AppReadTimeout  = 10
 	AppWriteTimeout = 10
@@ -64,23 +63,30 @@ func ReadConfig() {
 	viper.AutomaticEnv()
 }
 
-// GetConfigName 获取配置文件名称
+// GetConfigName 获取配置文件名称（不含扩展名）
 func GetConfigName() string {
-	return _defaultConfigName + "." + _defaultConfigType
+	return _defaultConfigName
 }
 
 // GetConfigPath 读取配置文件路径
 func GetConfigPath() string {
-	configPath := os.Getenv("CONF_PATH")
-	if configPath == "" {
-		var err error
-		if AppPath, err = filepath.Abs(filepath.Dir(os.Args[0])); err != nil {
-			panic(err)
-		}
-		workPath, err := os.Getwd()
-		configPath = filepath.Join(workPath, "config") // 先找当前目录conf下面的文件
+	if configPath := os.Getenv("CONF_PATH"); configPath != "" {
+		return configPath
 	}
-	return configPath
+
+	// 依次在当前目录及其上级目录中查找 config/app.toml，
+	// 便于在子目录中运行程序或单元测试时也能定位到配置文件
+	workPath, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	for dir := workPath; dir != filepath.Dir(dir); dir = filepath.Dir(dir) {
+		candidate := filepath.Join(dir, "config")
+		if _, err := os.Stat(filepath.Join(candidate, GetConfigName()+"."+_defaultConfigType)); err == nil {
+			return candidate
+		}
+	}
+	return filepath.Join(workPath, "config")
 }
 
 // LoadApp 加载app运行配置
@@ -88,7 +94,7 @@ func LoadApp() {
 	Hostname, _ = os.Hostname()
 	AppName = viper.GetString("app.appName")
 	appAddr := viper.GetString("app.appAddr")
-	JwtSecret = viper.GetString("app.jwtSecret")
+	JwtSecret = viper.GetString("jwt.secret")
 	RunMode = viper.GetString("app.runMode")
 	Env = viper.GetString("app.env")
 	if appAddr != "" {

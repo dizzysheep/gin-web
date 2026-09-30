@@ -20,11 +20,17 @@ var lock = sync.RWMutex{}
 const InstanceIdKey = "gorm:instance_id"
 
 func GetMysql(dbName string) *gorm.DB {
-	var err error
 	lock.RLock()
 	db := dbs[dbName]
 	lock.RUnlock()
 	if db != nil {
+		return db
+	}
+
+	// 加写锁后二次检查，防止并发调用时重复初始化连接池
+	lock.Lock()
+	defer lock.Unlock()
+	if db, ok := dbs[dbName]; ok {
 		return db
 	}
 
@@ -45,7 +51,7 @@ func GetMysql(dbName string) *gorm.DB {
 		configOption = &gorm.Config{Logger: NewGormLogger()}
 	}
 
-	db, err = gorm.Open(mysql.Open(dbConf.Dsn), configOption)
+	db, err := gorm.Open(mysql.Open(dbConf.Dsn), configOption)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -55,14 +61,15 @@ func GetMysql(dbName string) *gorm.DB {
 		InitGormHook(db)
 	}
 	db = db.Set(InstanceIdKey, crypto.Md5(dbConf.Dsn))
-	sqlDB, _ := db.DB()
+	sqlDB, err := db.DB()
+	if err != nil {
+		panic(err.Error())
+	}
 	sqlDB.SetMaxIdleConns(dbConf.MaxIdle)
 	sqlDB.SetMaxOpenConns(dbConf.MaxActive)
 	sqlDB.SetConnMaxLifetime(time.Duration(dbConf.IdleTimeout) * time.Second)
 
-	lock.Lock()
 	dbs[dbName] = db
-	lock.Unlock()
 	return db
 }
 

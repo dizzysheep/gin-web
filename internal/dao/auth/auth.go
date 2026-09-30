@@ -25,7 +25,7 @@ func (dao *authDao) SelectMany(ctx context.Context, conditions common.GormCondit
 	var list []*model.Auth
 	tx := dao.WithContext(ctx).Model(&model.Auth{}).Scopes(conditions.BuildConditions)
 	if pager != nil {
-		tx.Scopes(pager.Paginate())
+		tx = tx.Scopes(pager.Paginate())
 	}
 	err := tx.Find(&list).Error
 	return list, err

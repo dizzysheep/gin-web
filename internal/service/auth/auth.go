@@ -7,6 +7,7 @@ import (
 	"gin-web/internal/dao"
 	"gin-web/internal/dao/common"
 	"github.com/pkg/errors"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type authService struct {
@@ -29,7 +30,8 @@ func (s *authService) Login(ctx context.Context, req *dto.LoginReqDTO) (*dto.Log
 		return nil, errors.Wrap(err, "AuthService.Login")
 	}
 
-	if user.Password != req.Password {
+	// 密码使用 bcrypt 校验，数据库中存储的是哈希值
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		return nil, errors.New("邮箱或者密码不正确")
 	}
 

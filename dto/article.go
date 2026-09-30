@@ -11,7 +11,7 @@ import (
 // ListArticleRequest -----------列表查询------
 type ListArticleRequest struct {
 	PageNo   int `form:"page_no" json:"page_no"  binding:"required"`
-	PageSize int `form:"page_size" json:"page_size"  binding:"required"`
+	PageSize int `form:"page_size" json:"page_size"  binding:"required,max=100"`
 	//Name     string `form:"name" `
 	//State    *int8  `form:"state"`
 }

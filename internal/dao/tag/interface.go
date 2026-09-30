@@ -15,6 +15,7 @@ type Reader interface {
 type Writer interface {
 	InsertOne(ctx context.Context, model *model.Tag) error
 	UpdateOne(ctx context.Context, model *model.Tag) error
+	DeleteOne(ctx context.Context, id int64) error
 }
 
 type TagDao interface {

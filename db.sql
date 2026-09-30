@@ -14,8 +14,8 @@ CREATE TABLE `blog_tag`
 CREATE TABLE `blog_auth`
 (
     `id`       int unsigned NOT NULL AUTO_INCREMENT,
-    `username` varchar(50) DEFAULT '' COMMENT '账号',
-    `password` varchar(50) DEFAULT '' COMMENT '密码',
+    `username` varchar(50)  DEFAULT '' COMMENT '账号',
+    `password` varchar(100) DEFAULT '' COMMENT '密码(bcrypt哈希)',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
@@ -35,4 +35,5 @@ CREATE TABLE `blog_article`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
-INSERT INTO `blog2`.`blog_auth`(`username`, `password`) VALUES ('admin', '123456');
+-- 密码为 123456 的 bcrypt 哈希，登录时由 bcrypt.CompareHashAndPassword 校验
+INSERT INTO `blog_auth`(`username`, `password`) VALUES ('admin', '$2a$10$p2C7meW8dLv833ASNs3gveTArVo5GK/isvAMc2hHwUCojYie9RxIm');

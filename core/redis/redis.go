@@ -1,52 +1,57 @@
 package redis
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"gin-web/core/config"
-	"github.com/go-redis/redis"
+	"gin-web/core/log"
+	goredis "github.com/redis/go-redis/v9"
+	"sync"
 	"time"
 )
 
-var RedisClient *redis.Client
+var (
+	RedisClient *goredis.Client
+	redisOnce   sync.Once
+)
 
-func InitRedis() *redis.Client {
-	if RedisClient != nil {
-		return RedisClient
-	}
-	redisConfig := config.NewRedisConfig()
-	RedisClient = redis.NewClient(&redis.Options{
-		Addr:     redisConfig.Addr,
-		Password: redisConfig.Password, // no password set
-		DB:       redisConfig.DB,       // use default DB
+func InitRedis() *goredis.Client {
+	redisOnce.Do(func() {
+		redisConfig := config.NewRedisConfig()
+		RedisClient = goredis.NewClient(&goredis.Options{
+			Addr:     redisConfig.Addr,
+			Password: redisConfig.Password, // no password set
+			DB:       redisConfig.DB,       // use default DB
+		})
+
+		if err := RedisClient.Ping(context.Background()).Err(); err != nil {
+			log.Get(nil).Errorf("redis connection failed: %s", err.Error())
+		}
 	})
-	_, err := RedisClient.Ping().Result()
-	if err != nil {
-		fmt.Println("redis connection failed: ", err.Error())
-	}
 	return RedisClient
 }
 
-func SaveStruct(key string, data interface{}, second time.Duration) error {
+// SaveStruct 以json序列化存储结构体，expiration为过期时长
+func SaveStruct(key string, data interface{}, expiration time.Duration) error {
 	jsonStr, err := json.Marshal(data)
 	if err != nil {
-		return errors.New(fmt.Sprintf("save key `%s` json marshal error", key))
+		return fmt.Errorf("save key `%s` json marshal error: %w", key, err)
 	}
-	err = RedisClient.Set(key, string(jsonStr), time.Second*second).Err()
-	if err != nil {
-		return errors.New(fmt.Sprintf("save key `%s` fail:%s", key, err.Error()))
+	if err := RedisClient.Set(context.Background(), key, string(jsonStr), expiration).Err(); err != nil {
+		return fmt.Errorf("save key `%s` fail: %w", key, err)
 	}
 	return nil
 }
 
 func GetStruct(key string, data interface{}) error {
-	valStr, err := RedisClient.Get(key).Result()
-	if redis.Nil == err {
-		return errors.New(fmt.Sprintf("key `%s` not found", key))
+	valStr, err := RedisClient.Get(context.Background(), key).Result()
+	if errors.Is(err, goredis.Nil) {
+		return fmt.Errorf("key `%s` not found", key)
 	}
 	if err != nil {
-		return errors.New(fmt.Sprintf("get key `%s` fail:%s", key, err.Error()))
+		return fmt.Errorf("get key `%s` fail: %w", key, err)
 	}
 	return json.Unmarshal([]byte(valStr), &data)
 }

@@ -34,8 +34,8 @@ apisRequestLogOff = true
 filePath = "./runtime/logs/"
 [jwt]
 secret = "23347$040412"
-expireTime = "3600"
+expireTime = 3600
 [skywalking]
-skywalkingSwitch=false
-skywalkingSamplingRate=1
-skywalkingHost="localhost:11800"
+switchOn=false
+samplingRate=1
+host="localhost:11800"

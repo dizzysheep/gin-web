@@ -3,7 +3,6 @@ package middleware
 import (
 	"bytes"
 	"fmt"
-	"gin-web/core/config"
 	"gin-web/core/log"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -27,8 +26,9 @@ func (w responseWriter) Write(b []byte) (int, error) {
 
 func GinLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		//屏蔽调健康监测日志
-		if c.Request.RequestURI == "/api/healthz" || config.IsDevEnv {
+		// 屏蔽健康监测日志（注意：仍需执行后续处理链）
+		if c.Request.URL.Path == "/api/health" {
+			c.Next()
 			return
 		}
 
@@ -40,15 +40,14 @@ func GinLogger() gin.HandlerFunc {
 
 		ST := fmt.Sprintf("%d ms", time.Since(startTime).Milliseconds())
 		statusCode := c.Writer.Status()
-		responseStr := response.b.String()
-		responseStr = log.HideSensitiveInfo(response.b.String())
+		responseStr := log.HideSensitiveInfo(response.b.String())
 
 		// 二.从标准记录器创建一个条目，并向其中添加多个字段(隐式添加 log 本身的时间戳,信息等 fields )
 		entry := log.Get(c).WithFields(logrus.Fields{
 			"status":        statusCode,
 			"user_agent":    c.Request.UserAgent(),
 			"response":      responseStr,
-			"request_body":  getRequestBody(c),
+			"request_body":  log.HideSensitiveInfo(getRequestBody(c)),
 			"response_time": ST,
 		})
 

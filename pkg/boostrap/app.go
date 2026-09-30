@@ -6,6 +6,7 @@ import (
 	"gin-web/core/config"
 	"gin-web/core/log"
 	"gin-web/core/mysql"
+	"gin-web/core/redis"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 )
 
 func InitApp() {
+	redis.InitRedis()
 }
 
 func InitDBEngine() *gorm.DB {

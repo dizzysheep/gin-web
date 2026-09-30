@@ -20,7 +20,6 @@ func NewTagService(daos *dao.Daos) TagService {
 
 func (s *tagService) List(ctx context.Context, reqDTO *dto.ListTagReqDTO) (*dto.ListTagRespDTO, error) {
 	var (
-		err    error
 		total  int64
 		tagPOs []*model.Tag
 		eg     errgroup.Group
@@ -30,23 +29,24 @@ func (s *tagService) List(ctx context.Context, reqDTO *dto.ListTagReqDTO) (*dto.
 	pager := &common.Pagination{Offset: reqDTO.Offset, PageSize: reqDTO.PageSize}
 
 	eg.Go(func() error {
-		total, err = s.daos.Tag.Count(ctx, conditions)
+		count, err := s.daos.Tag.Count(ctx, conditions)
 		if err != nil {
 			return errors.Wrap(err, "select tag count")
 		}
+		total = count
 		return nil
 	})
 
 	eg.Go(func() error {
-		tagPOs, err = s.daos.Tag.SelectMany(ctx, conditions, pager)
+		pos, err := s.daos.Tag.SelectMany(ctx, conditions, pager)
 		if err != nil {
 			return errors.Wrap(err, "select tag list")
 		}
+		tagPOs = pos
 		return nil
 	})
 
-	err = eg.Wait()
-	if err != nil {
+	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
 
@@ -87,5 +87,8 @@ func (s *tagService) Edit(ctx context.Context, reqDTO *dto.EditTagReqDTO) error 
 }
 
 func (s *tagService) Del(ctx context.Context, reqDTO *dto.IDReqDTO) error {
+	if err := s.daos.Tag.DeleteOne(ctx, reqDTO.ID); err != nil {
+		return errors.Wrap(err, "delete tag fail")
+	}
 	return nil
 }

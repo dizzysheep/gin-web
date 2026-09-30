@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gin-web/core/log"
 	"gin-web/internal/errcode"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -39,7 +40,7 @@ func Fail(c *gin.Context, code errcode.ErrCode) {
 
 func FailErr(c *gin.Context, err error) {
 	code := errcode.ErrFail.Code()
-	msg := err.Error()
+	msg := errcode.ErrFail.String()
 
 	var customErr *errcode.CustomError
 	if errors.As(err, &customErr) {
@@ -49,6 +50,9 @@ func FailErr(c *gin.Context, err error) {
 		} else {
 			msg = customErr.Error()
 		}
+	} else {
+		// 非业务错误不对外透出内部细节（如SQL错误），仅记录日志
+		log.Get(c).WithError(err).Error("internal error")
 	}
 
 	res := BuildResponse(code, msg, nil)
