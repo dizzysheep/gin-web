@@ -2,18 +2,29 @@ package dto
 
 import (
 	"gin-web/app/ext"
-	"gin-web/core/xtime"
 	"gin-web/internal/model"
 	"github.com/gin-gonic/gin"
-	"time"
 )
 
-// ListTagRequest -----------列表查询------
+// TagVO 标签（文章内嵌展示）
+type TagVO struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+func TagPOToVO(po *model.Tag) *TagVO {
+	if po == nil {
+		return nil
+	}
+	return &TagVO{ID: po.ID, Name: po.Name}
+}
+
+// ListTagRequest 标签列表查询
 type ListTagRequest struct {
-	PageNo   int    `form:"page_no" json:"page_no"  binding:"required"`
-	PageSize int    `form:"page_size" json:"page_size" binding:"required,max=100"`
-	Name     string `form:"name" json:"name" `
-	State    *int8  `form:"state" json:"state"`
+	Page     int    `form:"page" json:"page" binding:"omitempty,gte=1" example:"1"`
+	PageSize int    `form:"page_size" json:"page_size" binding:"omitempty,gte=1,lte=100" example:"10"`
+	Name     string `form:"name" json:"name" binding:"max=100" example:"go"`
+	State    *int8  `form:"state" json:"state" binding:"omitempty,oneof=0 1" example:"1"`
 }
 
 func ListTagReqToDTO(c *gin.Context) (*ListTagReqDTO, error) {
@@ -25,7 +36,7 @@ func ListTagReqToDTO(c *gin.Context) (*ListTagReqDTO, error) {
 	return &ListTagReqDTO{
 		Name:  req.Name,
 		State: req.State,
-		Pager: PagerReqToDTO(req.PageNo, req.PageSize),
+		Pager: PagerReqToDTO(req.Page, req.PageSize),
 	}, nil
 }
 
@@ -38,12 +49,35 @@ type ListTagReqDTO struct {
 type ListTagRespDTO struct {
 	Pager  *Pager
 	TagPOs []*model.Tag
+	// ArticleCounts 标签ID -> 关联文章数
+	ArticleCounts map[int64]int64
+}
+
+type ListTagResponse struct {
+	Pager *Pager       `json:"pager"`
+	List  []*TagItemVO `json:"list"`
+}
+
+type TagItemVO struct {
+	ID           int64  `json:"id"`
+	Name         string `json:"name"`
+	State        int8   `json:"state"`
+	ArticleCount int64  `json:"article_count"`
+	UpdateTime   uint32 `json:"update_time"`
+	UpdateUser   string `json:"update_user"`
 }
 
 func (l *ListTagRespDTO) ToVO() *ListTagResponse {
-	list := make([]*TagVO, 0, len(l.TagPOs))
+	list := make([]*TagItemVO, 0, len(l.TagPOs))
 	for _, po := range l.TagPOs {
-		list = append(list, TagPOToVO(po))
+		list = append(list, &TagItemVO{
+			ID:           po.ID,
+			Name:         po.Name,
+			State:        po.State,
+			ArticleCount: l.ArticleCounts[po.ID],
+			UpdateTime:   po.ModifiedOn,
+			UpdateUser:   po.ModifiedBy,
+		})
 	}
 	return &ListTagResponse{
 		Pager: l.Pager,
@@ -51,15 +85,10 @@ func (l *ListTagRespDTO) ToVO() *ListTagResponse {
 	}
 }
 
-type ListTagResponse struct {
-	Pager *Pager   `json:"pager"`
-	List  []*TagVO `json:"list"`
-}
-
-// AddTagRequest -----------添加标签------
+// AddTagRequest 添加标签
 type AddTagRequest struct {
-	Name  string `form:"name" json:"name" binding:"required"`
-	State *int8  `form:"state" json:"state" binding:"required"`
+	Name  string `form:"name" json:"name" binding:"required,max=100" example:"go"`
+	State *int8  `form:"state" json:"state" binding:"required,oneof=0 1" example:"1"`
 }
 
 func AddTagReqToDTO(c *gin.Context) (*AddTagReqDTO, error) {
@@ -77,11 +106,11 @@ func AddTagReqToDTO(c *gin.Context) (*AddTagReqDTO, error) {
 
 type AddTagReqDTO struct {
 	Name     string
-	Username string
 	State    *int8
+	Username string
 }
 
-// EditTagReqDTO -----------添加标签------
+// EditTagReqDTO 编辑标签
 type EditTagReqDTO struct {
 	ID       int64
 	State    *int8
@@ -106,27 +135,4 @@ func EditTagReqToDTO(c *gin.Context) (*EditTagReqDTO, error) {
 		State:    req.State,
 		Username: ext.GetUsername(c),
 	}, nil
-}
-
-// TagVO -----------试图层显示------
-type TagVO struct {
-	ID         int64  `json:"id"`
-	Name       string `json:"name"`
-	State      int8   `json:"state"`
-	UpdateTime string `json:"update_time"`
-	UpdateUser string `json:"update_user"`
-}
-
-func TagPOToVO(po *model.Tag) *TagVO {
-	if po == nil {
-		return nil
-	}
-
-	return &TagVO{
-		ID:         po.ID,
-		Name:       po.Name,
-		State:      po.State,
-		UpdateTime: time.Unix(po.UpdatedAt, 0).Format(xtime.DATE_TIME_FMT),
-		UpdateUser: po.UpdateUser,
-	}
 }

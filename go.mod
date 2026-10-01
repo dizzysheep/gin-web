@@ -8,6 +8,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cast v1.4.1
 	github.com/swaggo/swag v1.8.1
+	github.com/yuin/goldmark v1.4.13
 )
 
 require (

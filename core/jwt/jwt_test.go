@@ -10,9 +10,9 @@ import (
 )
 
 func TestGenerateAndParseToken(t *testing.T) {
-	user := &model.Auth{ID: 1, Username: "admin"}
+	user := &model.User{ID: 1, Username: "admin"}
 
-	token, err := GenerateToken(user)
+	token, err := GenerateToken(user, 0)
 	if err != nil {
 		t.Fatalf("GenerateToken err: %v", err)
 	}
@@ -27,6 +27,12 @@ func TestGenerateAndParseToken(t *testing.T) {
 	if claims.UserInfo == nil || claims.UserInfo.Username != "admin" {
 		t.Fatalf("unexpected user info: %+v", claims.UserInfo)
 	}
+	if claims.ID == "" {
+		t.Fatal("claims jti is empty")
+	}
+	if claims.Ver != 0 {
+		t.Fatalf("ver = %d, want 0", claims.Ver)
+	}
 }
 
 func TestParseTokenInvalid(t *testing.T) {
@@ -37,7 +43,7 @@ func TestParseTokenInvalid(t *testing.T) {
 
 // 签名被篡改的token应被拒绝
 func TestParseTokenBadSignature(t *testing.T) {
-	token, err := GenerateToken(&model.Auth{ID: 1, Username: "admin"})
+	token, err := GenerateToken(&model.User{ID: 1, Username: "admin"}, 0)
 	if err != nil {
 		t.Fatalf("GenerateToken err: %v", err)
 	}

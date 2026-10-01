@@ -16,6 +16,7 @@ func JWT() gin.HandlerFunc {
 		token, err := extractToken(c)
 		if err != nil {
 			response.FailErr(c, err)
+			c.Abort()
 			return
 		}
 
@@ -27,6 +28,13 @@ func JWT() gin.HandlerFunc {
 				return
 			}
 
+			response.Fail(c, errcode.TokenInValid)
+			c.Abort()
+			return
+		}
+
+		// 已登出（黑名单）或密码版本号不匹配（已改密）的token视为无效
+		if claims.UserInfo == nil || jwt.IsBlacklisted(claims.ID) || claims.Ver != jwt.CurrentVer(claims.UserInfo.ID) {
 			response.Fail(c, errcode.TokenInValid)
 			c.Abort()
 			return

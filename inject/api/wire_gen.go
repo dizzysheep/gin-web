@@ -10,11 +10,19 @@ import (
 	"gin-web/app/handler"
 	"gin-web/internal/dao"
 	"gin-web/internal/dao/article"
-	"gin-web/internal/dao/auth"
+	"gin-web/internal/dao/category"
+	"gin-web/internal/dao/comment"
+	"gin-web/internal/dao/link"
+	"gin-web/internal/dao/option"
 	"gin-web/internal/dao/tag"
+	"gin-web/internal/dao/user"
 	"gin-web/internal/service"
 	article2 "gin-web/internal/service/article"
-	auth2 "gin-web/internal/service/auth"
+	"gin-web/internal/service/auth"
+	category2 "gin-web/internal/service/category"
+	comment2 "gin-web/internal/service/comment"
+	link2 "gin-web/internal/service/link"
+	option2 "gin-web/internal/service/option"
 	tag2 "gin-web/internal/service/tag"
 	"gin-web/pkg/boostrap"
 )
@@ -24,32 +32,56 @@ import (
 func NewAppContainer() *AppContainer {
 	db := boostrap.InitDBEngine()
 	articleDao := article.NewArticleDao(db)
-	authDao := auth.NewAuthDao(db)
+	categoryDao := category.NewCategoryDao(db)
+	commentDao := comment.NewCommentDao(db)
+	linkDao := link.NewLinkDao(db)
+	optionDao := option.NewOptionDao(db)
 	tagDao := tag.NewTagDao(db)
+	userDao := user.NewUserDao(db)
 	daos := &dao.Daos{
-		Article: articleDao,
-		Auth:    authDao,
-		Tag:     tagDao,
+		Article:  articleDao,
+		Category: categoryDao,
+		Comment:  commentDao,
+		Link:     linkDao,
+		Option:   optionDao,
+		Tag:      tagDao,
+		User:     userDao,
 	}
 	articleService := article2.NewArticleService(daos)
+	authService := auth.NewAuthService(daos)
+	categoryService := category2.NewCategoryService(daos)
+	optionService := option2.NewOptionService(daos)
+	commentService := comment2.NewCommentService(daos, optionService)
+	linkService := link2.NewLinkService(daos)
 	tagService := tag2.NewTagService(daos)
-	authService := auth2.NewAuthService(daos)
 	services := &service.Services{
-		Article: articleService,
-		Tag:     tagService,
-		Auth:    authService,
+		Article:  articleService,
+		Auth:     authService,
+		Category: categoryService,
+		Comment:  commentService,
+		Link:     linkService,
+		Option:   optionService,
+		Tag:      tagService,
 	}
 	commonHandler := handler.NewCommonHandler(services)
-	healthHandler := handler.NewHealthHandler()
-	tagHandler := handler.NewTagHandler(services)
+	healthHandler := handler.NewHealthHandler(db)
 	authHandler := handler.NewAuthHandler(services)
 	articleHandler := handler.NewArticleHandler(services)
+	categoryHandler := handler.NewCategoryHandler(services)
+	tagHandler := handler.NewTagHandler(services)
+	commentHandler := handler.NewCommentHandler(services)
+	linkHandler := handler.NewLinkHandler(services)
+	uploadHandler := handler.NewUploadHandler()
 	handlers := &handler.Handlers{
-		Common:  commonHandler,
-		Health:  healthHandler,
-		Tag:     tagHandler,
-		Auth:    authHandler,
-		Article: articleHandler,
+		Common:   commonHandler,
+		Health:   healthHandler,
+		Auth:     authHandler,
+		Article:  articleHandler,
+		Category: categoryHandler,
+		Tag:      tagHandler,
+		Comment:  commentHandler,
+		Link:     linkHandler,
+		Upload:   uploadHandler,
 	}
 	appContainer := &AppContainer{
 		Handlers: handlers,

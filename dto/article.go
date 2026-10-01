@@ -2,18 +2,17 @@ package dto
 
 import (
 	"gin-web/app/ext"
-	"gin-web/core/xtime"
 	"gin-web/internal/model"
 	"github.com/gin-gonic/gin"
-	"time"
 )
 
-// ListArticleRequest -----------列表查询------
+// ListArticleRequest 公开文章列表查询
 type ListArticleRequest struct {
-	PageNo   int `form:"page_no" json:"page_no"  binding:"required"`
-	PageSize int `form:"page_size" json:"page_size"  binding:"required,max=100"`
-	//Name     string `form:"name" `
-	//State    *int8  `form:"state"`
+	Page       int    `form:"page" json:"page" binding:"omitempty,gte=1" example:"1"`
+	PageSize   int    `form:"page_size" json:"page_size" binding:"omitempty,gte=1,lte=100" example:"10"`
+	CategoryID int64  `form:"category_id" json:"category_id" binding:"gte=0" example:"1"`
+	TagID      int64  `form:"tag_id" json:"tag_id" binding:"gte=0" example:"1"`
+	Keyword    string `form:"keyword" json:"keyword" binding:"max=100" example:"gin"`
 }
 
 func ListArticleReqToDTO(c *gin.Context) (*ListArticleReqDTO, error) {
@@ -23,25 +22,114 @@ func ListArticleReqToDTO(c *gin.Context) (*ListArticleReqDTO, error) {
 	}
 
 	return &ListArticleReqDTO{
-		Pager: PagerReqToDTO(req.PageNo, req.PageSize),
+		CategoryID: req.CategoryID,
+		TagID:      req.TagID,
+		Keyword:    req.Keyword,
+		Pager:      PagerReqToDTO(req.Page, req.PageSize),
 	}, nil
 }
 
 type ListArticleReqDTO struct {
-	Name  string
-	State *int8
+	CategoryID int64
+	TagID      int64
+	Keyword    string
 	*Pager
+}
+
+// AdminListArticleRequest 管理端文章列表查询（含草稿）
+type AdminListArticleRequest struct {
+	ListArticleRequest
+	State   *int8 `form:"state" json:"state" binding:"omitempty,oneof=0 1" example:"1"`
+	IsDraft *int8 `form:"is_draft" json:"is_draft" binding:"omitempty,oneof=0 1" example:"0"`
+}
+
+func AdminListArticleReqToDTO(c *gin.Context) (*AdminListArticleReqDTO, error) {
+	var req AdminListArticleRequest
+	if err := c.ShouldBind(&req); err != nil {
+		return nil, err
+	}
+
+	return &AdminListArticleReqDTO{
+		ListArticleReqDTO: ListArticleReqDTO{
+			CategoryID: req.CategoryID,
+			TagID:      req.TagID,
+			Keyword:    req.Keyword,
+			Pager:      PagerReqToDTO(req.Page, req.PageSize),
+		},
+		State:   req.State,
+		IsDraft: req.IsDraft,
+	}, nil
+}
+
+type AdminListArticleReqDTO struct {
+	ListArticleReqDTO
+	State   *int8
+	IsDraft *int8
+}
+
+// ArticleItem 列表项（PO + 聚合的标签/分类）
+type ArticleItem struct {
+	PO       *model.Article
+	Category *model.Category
+	Tags     []*model.Tag
 }
 
 type ListArticleRespDTO struct {
 	Pager *Pager
-	POs   []*model.Article
+	Items []*ArticleItem
+}
+
+type ListArticleResponse struct {
+	Pager *Pager           `json:"pager"`
+	List  []*ArticleListVO `json:"list"`
+}
+
+type ArticleListVO struct {
+	ID          int64       `json:"id"`
+	CategoryID  int64       `json:"category_id"`
+	Category    *CategoryVO `json:"category"`
+	Title       string      `json:"title"`
+	Slug        string      `json:"slug"`
+	Desc        string      `json:"desc"`
+	Cover       string      `json:"cover"`
+	ViewCount   int64       `json:"view_count"`
+	IsTop       int8        `json:"is_top"`
+	IsDraft     int8        `json:"is_draft"`
+	State       int8        `json:"state"`
+	PublishedOn uint32      `json:"published_on"`
+	Tags        []*TagVO    `json:"tags"`
+}
+
+func ArticleItemToVO(item *ArticleItem) *ArticleListVO {
+	if item == nil || item.PO == nil {
+		return nil
+	}
+	po := item.PO
+	vo := &ArticleListVO{
+		ID:          po.ID,
+		CategoryID:  po.CategoryID,
+		Title:       po.Title,
+		Slug:        po.Slug,
+		Desc:        po.Desc,
+		Cover:       po.Cover,
+		ViewCount:   po.ViewCount,
+		IsTop:       po.IsTop,
+		IsDraft:     po.IsDraft,
+		State:       po.State,
+		PublishedOn: po.PublishedOn,
+		Category:    CategoryPOToVO(item.Category),
+		Tags:        make([]*TagVO, 0, len(item.Tags)),
+	}
+	for _, tag := range item.Tags {
+		vo.Tags = append(vo.Tags, TagPOToVO(tag))
+	}
+	return vo
 }
 
 func (l *ListArticleRespDTO) ToVO() *ListArticleResponse {
-	list := make([]*ArticleVO, 0, len(l.POs))
-	for _, po := range l.POs {
-		list = append(list, ArticlePOToVO(po))
+	list := make([]*ArticleListVO, 0, len(l.Items))
+	for _, item := range l.Items {
+		list = append(list, ArticleItemToVO(item))
 	}
 	return &ListArticleResponse{
 		Pager: l.Pager,
@@ -49,46 +137,70 @@ func (l *ListArticleRespDTO) ToVO() *ListArticleResponse {
 	}
 }
 
-type ListArticleResponse struct {
-	Pager *Pager       `json:"pager"`
-	List  []*ArticleVO `json:"list"`
+// ArticleDetailRespDTO 文章详情
+type ArticleDetailRespDTO struct {
+	PO        *model.Article
+	Category  *model.Category
+	Tags      []*model.Tag
+	ViewDelta int64 // 当日未落库的浏览量增量
 }
 
-// ArticleVO -----------VO------
-type ArticleVO struct {
-	ID         int64  `json:"id"`
-	Title      string `json:"title"`
-	State      int8   `json:"state"`
-	Desc       string `json:"desc"`
-	Content    string `json:"content"`
-	Tag        *TagVO `json:"tag"`
-	UpdateUser string `json:"update_user"`
-	UpdateTime string `json:"update_time"`
+type ArticleDetailResponse struct {
+	ID          int64       `json:"id"`
+	CategoryID  int64       `json:"category_id"`
+	Category    *CategoryVO `json:"category"`
+	Title       string      `json:"title"`
+	Slug        string      `json:"slug"`
+	Desc        string      `json:"desc"`
+	Cover       string      `json:"cover"`
+	ContentMd   string      `json:"content_md"`
+	ContentHtml string      `json:"content_html"`
+	ViewCount   int64       `json:"view_count"`
+	IsTop       int8        `json:"is_top"`
+	IsDraft     int8        `json:"is_draft"`
+	State       int8        `json:"state"`
+	PublishedOn uint32      `json:"published_on"`
+	Tags        []*TagVO    `json:"tags"`
 }
 
-func ArticlePOToVO(po *model.Article) *ArticleVO {
-	if po == nil {
-		return nil
+func (d *ArticleDetailRespDTO) ToVO() *ArticleDetailResponse {
+	if d.PO == nil {
+		return &ArticleDetailResponse{}
 	}
-	return &ArticleVO{
-		ID:         po.ID,
-		Title:      po.Title,
-		State:      po.State,
-		Desc:       po.Desc,
-		Content:    po.Content,
-		Tag:        TagPOToVO(po.Tag),
-		UpdateUser: po.UpdateUser,
-		UpdateTime: time.Unix(po.UpdatedAt, 0).Format(xtime.DATE_TIME_FMT),
+	po := d.PO
+	vo := &ArticleDetailResponse{
+		ID:          po.ID,
+		CategoryID:  po.CategoryID,
+		Category:    CategoryPOToVO(d.Category),
+		Title:       po.Title,
+		Slug:        po.Slug,
+		Desc:        po.Desc,
+		Cover:       po.Cover,
+		ContentMd:   po.ContentMd,
+		ContentHtml: po.ContentHtml,
+		ViewCount:   po.ViewCount + d.ViewDelta,
+		IsTop:       po.IsTop,
+		IsDraft:     po.IsDraft,
+		State:       po.State,
+		PublishedOn: po.PublishedOn,
+		Tags:        make([]*TagVO, 0, len(d.Tags)),
 	}
+	for _, tag := range d.Tags {
+		vo.Tags = append(vo.Tags, TagPOToVO(tag))
+	}
+	return vo
 }
 
-// AddArticleRequest -----------列表查询------
+// AddArticleRequest 新建文章
 type AddArticleRequest struct {
-	TagID   int64  `json:"tag_id" binding:"required,gt=0"`
-	Title   string `json:"title" binding:"required"`
-	Desc    string `json:"desc" binding:"required"`
-	Content string `json:"content" binding:"required"`
-	State   int8   `json:"state" binding:"gte=0"`
+	Title      string  `json:"title" binding:"required,max=100" example:"文章标题"`
+	Desc       string  `json:"desc" binding:"max=255" example:"文章简述"`
+	ContentMd  string  `json:"content_md" binding:"required" example:"# markdown"`
+	Cover      string  `json:"cover" binding:"omitempty,max=255" example:"/uploads/20261001/xx.png"`
+	CategoryID int64   `json:"category_id" binding:"gte=0" example:"1"`
+	TagIDs     []int64 `json:"tag_ids" binding:"omitempty,max=10,dive,gt=0" example:"1,2"`
+	Slug       string  `json:"slug" binding:"omitempty,max=150" example:"hello-world"`
+	IsDraft    bool    `json:"is_draft" example:"false"`
 }
 
 func AddArticleReqToDTO(c *gin.Context) (*AddArticleReqDTO, error) {
@@ -98,20 +210,177 @@ func AddArticleReqToDTO(c *gin.Context) (*AddArticleReqDTO, error) {
 	}
 
 	return &AddArticleReqDTO{
-		TagID:    req.TagID,
-		Title:    req.Title,
-		Desc:     req.Desc,
-		Content:  req.Content,
-		State:    req.State,
-		Username: ext.GetUsername(c),
+		Title:      req.Title,
+		Desc:       req.Desc,
+		ContentMd:  req.ContentMd,
+		Cover:      req.Cover,
+		CategoryID: req.CategoryID,
+		TagIDs:     req.TagIDs,
+		Slug:       req.Slug,
+		IsDraft:    req.IsDraft,
+		Username:   ext.GetUsername(c),
 	}, nil
 }
 
 type AddArticleReqDTO struct {
-	TagID    int64
-	Title    string
-	Desc     string
-	Content  string
+	Title      string
+	Desc       string
+	ContentMd  string
+	Cover      string
+	CategoryID int64
+	TagIDs     []int64
+	Slug       string
+	IsDraft    bool
+	Username   string
+}
+
+// EditArticleRequest 编辑文章
+type EditArticleRequest struct {
+	AddArticleRequest
+}
+
+func EditArticleReqToDTO(c *gin.Context) (*EditArticleReqDTO, error) {
+	id, err := GetIDByCtx(c)
+	if err != nil {
+		return nil, err
+	}
+
+	var req EditArticleRequest
+	if err := c.ShouldBind(&req); err != nil {
+		return nil, err
+	}
+
+	return &EditArticleReqDTO{
+		ID: id,
+		AddArticleReqDTO: AddArticleReqDTO{
+			Title:      req.Title,
+			Desc:       req.Desc,
+			ContentMd:  req.ContentMd,
+			Cover:      req.Cover,
+			CategoryID: req.CategoryID,
+			TagIDs:     req.TagIDs,
+			Slug:       req.Slug,
+			IsDraft:    req.IsDraft,
+			Username:   ext.GetUsername(c),
+		},
+	}, nil
+}
+
+type EditArticleReqDTO struct {
+	ID int64
+	AddArticleReqDTO
+}
+
+// PublishArticleRequest 发布/下架
+type PublishArticleRequest struct {
+	Publish *bool `json:"publish" binding:"required" example:"true"`
+}
+
+func PublishArticleReqToDTO(c *gin.Context) (*PublishArticleReqDTO, error) {
+	id, err := GetIDByCtx(c)
+	if err != nil {
+		return nil, err
+	}
+
+	var req PublishArticleRequest
+	if err := c.ShouldBind(&req); err != nil {
+		return nil, err
+	}
+
+	return &PublishArticleReqDTO{
+		ID:       id,
+		Publish:  *req.Publish,
+		Username: ext.GetUsername(c),
+	}, nil
+}
+
+type PublishArticleReqDTO struct {
+	ID       int64
+	Publish  bool
+	Username string
+}
+
+// StateArticleRequest 启用/禁用
+type StateArticleRequest struct {
+	State *int8 `json:"state" binding:"required,oneof=0 1" example:"1"`
+}
+
+func StateArticleReqToDTO(c *gin.Context) (*StateArticleReqDTO, error) {
+	id, err := GetIDByCtx(c)
+	if err != nil {
+		return nil, err
+	}
+
+	var req StateArticleRequest
+	if err := c.ShouldBind(&req); err != nil {
+		return nil, err
+	}
+
+	return &StateArticleReqDTO{
+		ID:       id,
+		State:    *req.State,
+		Username: ext.GetUsername(c),
+	}, nil
+}
+
+type StateArticleReqDTO struct {
+	ID       int64
 	State    int8
 	Username string
+}
+
+// TopArticleRequest 置顶/取消置顶
+type TopArticleRequest struct {
+	IsTop *int8 `json:"is_top" binding:"required,oneof=0 1" example:"1"`
+}
+
+func TopArticleReqToDTO(c *gin.Context) (*TopArticleReqDTO, error) {
+	id, err := GetIDByCtx(c)
+	if err != nil {
+		return nil, err
+	}
+
+	var req TopArticleRequest
+	if err := c.ShouldBind(&req); err != nil {
+		return nil, err
+	}
+
+	return &TopArticleReqDTO{
+		ID:       id,
+		IsTop:    *req.IsTop,
+		Username: ext.GetUsername(c),
+	}, nil
+}
+
+type TopArticleReqDTO struct {
+	ID       int64
+	IsTop    int8
+	Username string
+}
+
+// ArticleSlugReqDTO 按slug查询
+type ArticleSlugReqDTO struct {
+	Slug string
+}
+
+// ArchiveRespDTO 归档
+type ArchiveRespDTO struct {
+	Rows []*model.ArchiveRow
+}
+
+type ArchiveResponse struct {
+	List []*ArchiveVO `json:"list"`
+}
+
+type ArchiveVO struct {
+	Month string `json:"month" example:"2026-09"`
+	Total int64  `json:"total" example:"3"`
+}
+
+func (a *ArchiveRespDTO) ToVO() *ArchiveResponse {
+	list := make([]*ArchiveVO, 0, len(a.Rows))
+	for _, row := range a.Rows {
+		list = append(list, &ArchiveVO{Month: row.Month, Total: row.Total})
+	}
+	return &ArchiveResponse{List: list}
 }

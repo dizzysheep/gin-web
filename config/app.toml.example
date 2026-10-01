@@ -34,7 +34,26 @@ apisRequestLogOff = true
 filePath = "./runtime/logs/"
 [jwt]
 secret = "23347$040412"
-expireTime = 3600
+expireTime = 7200
+[upload]
+# 存储驱动 local(本地磁盘) 预留oss
+driver = "local"
+# 本地存储根目录（生产环境建议由Nginx直接托管该目录）
+path = "./runtime/uploads"
+# 访问URL前缀
+urlPrefix = "/uploads"
+# 单文件大小上限(MB)
+maxSize = 5
+# 允许的扩展名
+allowExt = "jpg,jpeg,png,gif,webp"
+[job]
+# 浏览量Redis缓冲刷盘间隔(秒)
+viewFlushSec = 600
+[site]
+# RSS/Sitemap 对外地址；留空时按请求 Host 自动生成
+baseURL = ""
+title = "gin-web 个人博客"
+description = "基于 gin-web 的个人博客"
 [skywalking]
 switchOn=false
 samplingRate=1

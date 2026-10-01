@@ -30,11 +30,11 @@ func newTagDao(t *testing.T) (TagDao, sqlmock.Sqlmock) {
 	return NewTagDao(db), mock
 }
 
-// 验证删除接口真实执行DELETE（回归测试：Del曾是空实现）
+// 验证删除为软删除（UPDATE deleted_on），而非物理DELETE
 func TestDeleteOne(t *testing.T) {
 	dao, mock := newTagDao(t)
-	mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `blog_tag` WHERE id = ?")).
-		WithArgs(int64(7)).
+	mock.ExpectExec(regexp.QuoteMeta("UPDATE `blog_tag` SET `deleted_on`=?,`state`=? WHERE id = ? AND deleted_on = 0")).
+		WithArgs(sqlmock.AnyArg(), int8(0), int64(7)).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
 	if err := dao.DeleteOne(context.Background(), 7); err != nil {
@@ -47,7 +47,7 @@ func TestDeleteOne(t *testing.T) {
 
 func TestSelectOne(t *testing.T) {
 	dao, mock := newTagDao(t)
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `blog_tag` WHERE id = ?")).
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `blog_tag` WHERE id = ? AND deleted_on = 0")).
 		WithArgs(int64(3)).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).AddRow(3, "go"))
 
@@ -62,7 +62,7 @@ func TestSelectOne(t *testing.T) {
 
 func TestSelectManyAppliesPagination(t *testing.T) {
 	dao, mock := newTagDao(t)
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `blog_tag` LIMIT 10 OFFSET 20")).
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `blog_tag` WHERE deleted_on = 0 LIMIT 10 OFFSET 20")).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name"}))
 
 	_, err := dao.SelectMany(context.Background(), common.GormConditions{}, &common.Pagination{Offset: 20, PageSize: 10})
@@ -80,11 +80,27 @@ func TestUpdateOne(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
 	// 携带主键才会走UPDATE，零主键时Save会退化为INSERT
-	po := &model.Tag{Model: model.Model{ID: 3}, Name: "go"}
+	po := &model.Tag{AuditModel: model.AuditModel{Model: model.Model{ID: 3}}, Name: "go"}
 	if err := dao.UpdateOne(context.Background(), po); err != nil {
 		t.Fatalf("UpdateOne err: %v", err)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Fatalf("expectations not met: %v", err)
+	}
+}
+
+// 标签关联的文章数统计（删除前置校验）
+func TestCountRelationsByTagID(t *testing.T) {
+	dao, mock := newTagDao(t)
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT count(*) FROM `blog_article_tag` WHERE tag_id = ?")).
+		WithArgs(int64(5)).
+		WillReturnRows(sqlmock.NewRows([]string{"count(*)"}).AddRow(3))
+
+	count, err := dao.CountRelationsByTagID(context.Background(), 5)
+	if err != nil {
+		t.Fatalf("CountRelationsByTagID err: %v", err)
+	}
+	if count != 3 {
+		t.Fatalf("count = %d, want 3", count)
 	}
 }

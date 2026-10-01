@@ -1,6 +1,8 @@
 package common
 
 import (
+	"strings"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"reflect"
@@ -63,6 +65,30 @@ func (c GormConditions) BuildConditions(query *gorm.DB) *gorm.DB {
 		query = cond.BuildCond(query)
 	}
 	return query
+}
+
+// NotDeletedCond 软删除过滤：deleted_on = 0
+type NotDeletedCond struct{}
+
+func (c *NotDeletedCond) BuildCond(query *gorm.DB) *gorm.DB {
+	return query.Where("deleted_on = 0")
+}
+
+// NotDeleted 在业务条件前追加软删除过滤
+func NotDeleted(conditions GormConditions) GormConditions {
+	return append(GormConditions{&NotDeletedCond{}}, conditions...)
+}
+
+// OrderCond 排序条件，Columns 必须为代码内白名单字段，不可透传用户输入
+type OrderCond struct {
+	Columns []string
+}
+
+func (c *OrderCond) BuildCond(query *gorm.DB) *gorm.DB {
+	if len(c.Columns) == 0 {
+		return query
+	}
+	return query.Order(strings.Join(c.Columns, ", "))
 }
 
 func IsZeroValue(x interface{}) bool {

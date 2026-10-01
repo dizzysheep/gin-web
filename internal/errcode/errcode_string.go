@@ -8,7 +8,7 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[SuccessOk-1]
+	_ = x[SuccessOk-0]
 	_ = x[ErrFail-200000]
 	_ = x[ErrInvalidParams-200001]
 	_ = x[ErrNoAccess-200002]
@@ -19,22 +19,34 @@ func _() {
 	_ = x[TokenExpired-210001]
 	_ = x[TokenInValid-210002]
 	_ = x[TokenEmpty-210003]
+	_ = x[ErrArticleNotFound-220001]
+	_ = x[ErrCategoryNotFound-220002]
+	_ = x[ErrCategoryExist-220003]
+	_ = x[ErrTagNotFound-220004]
+	_ = x[ErrTagInUse-220005]
+	_ = x[ErrCommentNotFound-220006]
+	_ = x[ErrFileInvalid-220007]
+	_ = x[ErrPasswordWrong-220008]
+	_ = x[ErrCommentTooFast-220009]
+	_ = x[ErrCategoryInUse-220010]
 }
 
 const (
 	_ErrCode_name_0 = "ok"
 	_ErrCode_name_1 = "服务器错误非法请求参数无访问权限找不到资源数据库出错缓存出错请求异常，请稍后重试"
 	_ErrCode_name_2 = "token已过期无效tokentoken为空"
+	_ErrCode_name_3 = "文章不存在分类不存在分类已存在标签不存在标签已关联文章，无法删除评论不存在文件类型不允许或超过大小限制旧密码错误评论太频繁，请稍后再试分类下存在文章，无法删除"
 )
 
 var (
 	_ErrCode_index_1 = [...]uint8{0, 15, 33, 48, 63, 78, 90, 120}
 	_ErrCode_index_2 = [...]uint8{0, 14, 25, 36}
+	_ErrCode_index_3 = [...]uint16{0, 15, 30, 45, 60, 96, 111, 153, 168, 201, 234}
 )
 
 func (i ErrCode) String() string {
 	switch {
-	case i == 1:
+	case i == 0:
 		return _ErrCode_name_0
 	case 200000 <= i && i <= 200006:
 		i -= 200000
@@ -42,6 +54,9 @@ func (i ErrCode) String() string {
 	case 210001 <= i && i <= 210003:
 		i -= 210001
 		return _ErrCode_name_2[_ErrCode_index_2[i]:_ErrCode_index_2[i+1]]
+	case 220001 <= i && i <= 220010:
+		i -= 220001
+		return _ErrCode_name_3[_ErrCode_index_3[i]:_ErrCode_index_3[i+1]]
 	default:
 		return "ErrCode(" + strconv.FormatInt(int64(i), 10) + ")"
 	}

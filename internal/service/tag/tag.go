@@ -2,10 +2,14 @@ package tag
 
 import (
 	"context"
+
+	"gin-web/core/xtime"
 	"gin-web/dto"
 	"gin-web/internal/dao"
 	"gin-web/internal/dao/common"
+	"gin-web/internal/errcode"
 	"gin-web/internal/model"
+	articlecache "gin-web/internal/service/article"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
@@ -26,6 +30,13 @@ func (s *tagService) List(ctx context.Context, reqDTO *dto.ListTagReqDTO) (*dto.
 	)
 
 	conditions := common.GormConditions{}
+	if reqDTO.Name != "" {
+		conditions = append(conditions, &common.LikeCond{Field: "name", Value: reqDTO.Name})
+	}
+	if reqDTO.State != nil {
+		conditions = append(conditions, &common.EqCond{Field: "state", Value: *reqDTO.State})
+	}
+
 	pager := &common.Pagination{Offset: reqDTO.Offset, PageSize: reqDTO.PageSize}
 
 	eg.Go(func() error {
@@ -50,20 +61,37 @@ func (s *tagService) List(ctx context.Context, reqDTO *dto.ListTagReqDTO) (*dto.
 		return nil, err
 	}
 
+	ids := make([]int64, 0, len(tagPOs))
+	for _, t := range tagPOs {
+		ids = append(ids, t.ID)
+	}
+	counts, err := s.daos.Tag.CountArticleByIDs(ctx, ids)
+	if err != nil {
+		return nil, errors.Wrap(err, "count tag articles")
+	}
+
 	reqDTO.Pager.Total = total
 	return &dto.ListTagRespDTO{
-		TagPOs: tagPOs,
-		Pager:  reqDTO.Pager,
+		TagPOs:        tagPOs,
+		ArticleCounts: counts,
+		Pager:         reqDTO.Pager,
 	}, nil
 }
 
 func (s *tagService) Add(ctx context.Context, reqDTO *dto.AddTagReqDTO) error {
-	tagPO := &model.Tag{
-		Name:       reqDTO.Name,
-		State:      *reqDTO.State,
-		CreateUser: reqDTO.Username,
-		UpdateUser: reqDTO.Username,
+	exists, err := s.daos.Tag.ExistName(ctx, reqDTO.Name, 0)
+	if err != nil {
+		return errors.Wrap(err, "check tag name fail")
 	}
+	if exists {
+		return errcode.NewCustomErrorWithMessage(errcode.ErrInvalidParams, "标签名称已存在")
+	}
+	tagPO := &model.Tag{Name: reqDTO.Name}
+	tagPO.State = *reqDTO.State
+	tagPO.CreatedBy = reqDTO.Username
+	tagPO.ModifiedBy = reqDTO.Username
+	tagPO.CreatedOn = uint32(xtime.GetTimestamp())
+	tagPO.ModifiedOn = uint32(xtime.GetTimestamp())
 	if err := s.daos.Tag.InsertOne(ctx, tagPO); err != nil {
 		return errors.Wrap(err, "add tag fail")
 	}
@@ -73,22 +101,45 @@ func (s *tagService) Add(ctx context.Context, reqDTO *dto.AddTagReqDTO) error {
 func (s *tagService) Edit(ctx context.Context, reqDTO *dto.EditTagReqDTO) error {
 	po, err := s.daos.Tag.SelectOne(ctx, reqDTO.ID)
 	if err != nil {
-		return errors.Wrap(err, "select tag fail")
+		return errcode.NewCustomError(errcode.ErrTagNotFound)
+	}
+	exists, err := s.daos.Tag.ExistName(ctx, reqDTO.Name, reqDTO.ID)
+	if err != nil {
+		return errors.Wrap(err, "check tag name fail")
+	}
+	if exists {
+		return errcode.NewCustomErrorWithMessage(errcode.ErrInvalidParams, "标签名称已存在")
 	}
 
 	po.Name = reqDTO.Name
 	po.State = *reqDTO.State
-	po.UpdateUser = reqDTO.Username
+	po.ModifiedBy = reqDTO.Username
+	po.ModifiedOn = uint32(xtime.GetTimestamp())
 	if err := s.daos.Tag.UpdateOne(ctx, po); err != nil {
 		return errors.Wrap(err, "edit tag fail")
 	}
+	articlecache.InvalidateArticleCaches()
 
 	return nil
 }
 
+// Del 删除标签，标签已关联文章时拒绝删除
 func (s *tagService) Del(ctx context.Context, reqDTO *dto.IDReqDTO) error {
+	if _, err := s.daos.Tag.SelectOne(ctx, reqDTO.ID); err != nil {
+		return errcode.NewCustomError(errcode.ErrTagNotFound)
+	}
+
+	count, err := s.daos.Tag.CountRelationsByTagID(ctx, reqDTO.ID)
+	if err != nil {
+		return errors.Wrap(err, "count tag relations fail")
+	}
+	if count > 0 {
+		return errcode.NewCustomError(errcode.ErrTagInUse)
+	}
+
 	if err := s.daos.Tag.DeleteOne(ctx, reqDTO.ID); err != nil {
 		return errors.Wrap(err, "delete tag fail")
 	}
+	articlecache.InvalidateArticleCaches()
 	return nil
 }

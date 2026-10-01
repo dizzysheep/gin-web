@@ -1,19 +1,25 @@
 package dto
 
 type Pager struct {
-	PageNo   int   `json:"page_no"`
+	Page     int   `json:"page"`
 	PageSize int   `json:"page_size"`
 	Total    int64 `json:"total"`
 	Offset   int   `json:"-"`
 }
 
-func PagerReqToDTO(PageNo, pageSize int) *Pager {
-	if PageNo <= 0 {
-		PageNo = 1
+func PagerReqToDTO(page, pageSize int) *Pager {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100
 	}
 	return &Pager{
-		PageNo:   PageNo,
+		Page:     page,
 		PageSize: pageSize,
-		Offset:   (PageNo - 1) * pageSize,
+		Offset:   (page - 1) * pageSize,
 	}
 }

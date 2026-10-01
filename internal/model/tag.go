@@ -1,11 +1,8 @@
 package model
 
 type Tag struct {
-	Model
-	Name       string `gorm:"column:name"`
-	State      int8   `gorm:"column:state"`
-	CreateUser string `gorm:"column:create_user"`
-	UpdateUser string `gorm:"column:update_user"`
+	AuditModel
+	Name string `gorm:"column:name" json:"name"`
 }
 
 func (m *Tag) TableName() string {

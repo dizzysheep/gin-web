@@ -6,7 +6,7 @@ import "github.com/pkg/errors"
 type ErrCode int
 
 const (
-	SuccessOk ErrCode = 1 //ok
+	SuccessOk ErrCode = 0 //ok
 
 	//ErrFail 200 -- 通用错误码
 	ErrFail          ErrCode = 200000 //服务器错误
@@ -20,6 +20,18 @@ const (
 	TokenExpired ErrCode = 210001 // token已过期
 	TokenInValid ErrCode = 210002 // 无效token
 	TokenEmpty   ErrCode = 210003 // token为空
+
+	//ErrResource 220xxx -- 资源/业务错误码
+	ErrArticleNotFound  ErrCode = 220001 // 文章不存在
+	ErrCategoryNotFound ErrCode = 220002 // 分类不存在
+	ErrCategoryExist    ErrCode = 220003 // 分类已存在
+	ErrTagNotFound      ErrCode = 220004 // 标签不存在
+	ErrTagInUse         ErrCode = 220005 // 标签已关联文章，无法删除
+	ErrCommentNotFound  ErrCode = 220006 // 评论不存在
+	ErrFileInvalid      ErrCode = 220007 // 文件类型不允许或超过大小限制
+	ErrPasswordWrong    ErrCode = 220008 // 旧密码错误
+	ErrCommentTooFast   ErrCode = 220009 // 评论太频繁，请稍后再试
+	ErrCategoryInUse    ErrCode = 220010 // 分类下存在文章，无法删除
 )
 
 func (e ErrCode) Code() int {
