@@ -5,15 +5,17 @@ import (
 )
 
 type Handlers struct {
-	Common   *CommonHandler
-	Health   *HealthHandler
-	Auth     *AuthHandler
-	Article  *ArticleHandler
-	Category *CategoryHandler
-	Tag      *TagHandler
-	Comment  *CommentHandler
-	Link     *LinkHandler
-	Upload   *UploadHandler
+	Common    *CommonHandler
+	Health    *HealthHandler
+	Auth      *AuthHandler
+	Article   *ArticleHandler
+	Category  *CategoryHandler
+	Tag       *TagHandler
+	Comment   *CommentHandler
+	Dashboard *DashboardHandler
+	Link      *LinkHandler
+	Server    *ServerHandler
+	Upload    *UploadHandler
 }
 
 var ProviderSet = wire.NewSet(
@@ -24,6 +26,8 @@ var ProviderSet = wire.NewSet(
 	NewCategoryHandler,
 	NewTagHandler,
 	NewCommentHandler,
+	NewDashboardHandler,
 	NewLinkHandler,
+	NewServerHandler,
 	NewUploadHandler,
 )

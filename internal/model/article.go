@@ -15,6 +15,12 @@ type Article struct {
 	PublishedOn uint32 `gorm:"column:published_on" json:"published_on"`
 }
 
+// ArticleTrendRow is the daily published-article aggregate used by the admin dashboard.
+type ArticleTrendRow struct {
+	Day   string `gorm:"column:day" json:"day"`
+	Total int64  `gorm:"column:total" json:"total"`
+}
+
 func (m *Article) TableName() string {
 	return "blog_article"
 }

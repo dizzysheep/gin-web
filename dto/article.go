@@ -1,8 +1,11 @@
 package dto
 
 import (
+	"errors"
+
 	"gin-web/app/ext"
 	"gin-web/internal/model"
+	"gin-web/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,14 +42,27 @@ type ListArticleReqDTO struct {
 // AdminListArticleRequest 管理端文章列表查询（含草稿）
 type AdminListArticleRequest struct {
 	ListArticleRequest
-	State   *int8 `form:"state" json:"state" binding:"omitempty,oneof=0 1" example:"1"`
-	IsDraft *int8 `form:"is_draft" json:"is_draft" binding:"omitempty,oneof=0 1" example:"0"`
+	State         *int8  `form:"state" json:"state" binding:"omitempty,oneof=0 1" example:"1"`
+	IsDraft       *int8  `form:"is_draft" json:"is_draft" binding:"omitempty,oneof=0 1" example:"0"`
+	PublishedFrom string `form:"published_from" json:"published_from" example:"2026-10-01"`
+	PublishedTo   string `form:"published_to" json:"published_to" example:"2026-10-02"`
 }
 
 func AdminListArticleReqToDTO(c *gin.Context) (*AdminListArticleReqDTO, error) {
 	var req AdminListArticleRequest
 	if err := c.ShouldBind(&req); err != nil {
 		return nil, err
+	}
+	publishedFrom, err := utils.ParseDateToTimestamp(req.PublishedFrom, false)
+	if err != nil {
+		return nil, err
+	}
+	publishedTo, err := utils.ParseDateToTimestamp(req.PublishedTo, true)
+	if err != nil {
+		return nil, err
+	}
+	if publishedFrom != nil && publishedTo != nil && *publishedFrom >= *publishedTo {
+		return nil, errors.New("发布时间起始日期不能晚于结束日期")
 	}
 
 	return &AdminListArticleReqDTO{
@@ -56,15 +72,19 @@ func AdminListArticleReqToDTO(c *gin.Context) (*AdminListArticleReqDTO, error) {
 			Keyword:    req.Keyword,
 			Pager:      PagerReqToDTO(req.Page, req.PageSize),
 		},
-		State:   req.State,
-		IsDraft: req.IsDraft,
+		State:         req.State,
+		IsDraft:       req.IsDraft,
+		PublishedFrom: publishedFrom,
+		PublishedTo:   publishedTo,
 	}, nil
 }
 
 type AdminListArticleReqDTO struct {
 	ListArticleReqDTO
-	State   *int8
-	IsDraft *int8
+	State         *int8
+	IsDraft       *int8
+	PublishedFrom *int64
+	PublishedTo   *int64
 }
 
 // ArticleItem 列表项（PO + 聚合的标签/分类）
@@ -297,35 +317,6 @@ func PublishArticleReqToDTO(c *gin.Context) (*PublishArticleReqDTO, error) {
 type PublishArticleReqDTO struct {
 	ID       int64
 	Publish  bool
-	Username string
-}
-
-// StateArticleRequest 启用/禁用
-type StateArticleRequest struct {
-	State *int8 `json:"state" binding:"required,oneof=0 1" example:"1"`
-}
-
-func StateArticleReqToDTO(c *gin.Context) (*StateArticleReqDTO, error) {
-	id, err := GetIDByCtx(c)
-	if err != nil {
-		return nil, err
-	}
-
-	var req StateArticleRequest
-	if err := c.ShouldBind(&req); err != nil {
-		return nil, err
-	}
-
-	return &StateArticleReqDTO{
-		ID:       id,
-		State:    *req.State,
-		Username: ext.GetUsername(c),
-	}, nil
-}
-
-type StateArticleReqDTO struct {
-	ID       int64
-	State    int8
 	Username string
 }
 

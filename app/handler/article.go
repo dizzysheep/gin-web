@@ -249,6 +249,8 @@ func publicBaseURL(c *gin.Context) string {
 // @Param keyword query string false "关键词"
 // @Param state query int false "状态 0禁用 1启用"
 // @Param is_draft query int false "是否草稿 0否 1是"
+// @Param published_from query string false "发布时间起始日期 YYYY-MM-DD"
+// @Param published_to query string false "发布时间结束日期 YYYY-MM-DD（包含当天）"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Router /v1/admin/article [get]
@@ -396,12 +398,12 @@ func (h *ArticleHandler) Publish(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "文章ID"
-// @Param request body dto.StateArticleRequest true "状态"
+// @Param request body dto.StateRequest true "状态"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Router /v1/article/{id}/state [patch]
 func (h *ArticleHandler) State(c *gin.Context) {
-	reqDTO, err := dto.StateArticleReqToDTO(c)
+	reqDTO, err := dto.StateReqToDTO(c)
 	if err != nil {
 		response.BadRequest(c, err)
 		return

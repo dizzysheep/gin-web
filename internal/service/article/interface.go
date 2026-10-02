@@ -15,7 +15,7 @@ type ArticleService interface {
 	Edit(ctx context.Context, reqDTO *dto.EditArticleReqDTO) error
 	Del(ctx context.Context, reqDTO *dto.IDReqDTO) error
 	Publish(ctx context.Context, reqDTO *dto.PublishArticleReqDTO) error
-	State(ctx context.Context, reqDTO *dto.StateArticleReqDTO) error
+	State(ctx context.Context, reqDTO *dto.StateReqDTO) error
 	Top(ctx context.Context, reqDTO *dto.TopArticleReqDTO) error
 	Archive(ctx context.Context) (*dto.ArchiveRespDTO, error)
 	AllPublished(ctx context.Context) (*dto.ListArticleRespDTO, error)

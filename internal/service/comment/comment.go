@@ -107,12 +107,11 @@ func (s *commentService) AdminList(ctx context.Context, reqDTO *dto.AdminListCom
 		eg         errgroup.Group
 	)
 
-	conditions := common.GormConditions{}
+	conditions := common.GormConditions{
+		&common.EqCond{Field: "state", Value: reqDTO.State},
+	}
 	if reqDTO.ArticleID > 0 {
 		conditions = append(conditions, &common.EqCond{Field: "article_id", Value: reqDTO.ArticleID})
-	}
-	if reqDTO.State != nil {
-		conditions = append(conditions, &common.EqCond{Field: "state", Value: *reqDTO.State})
 	}
 
 	pager := &common.Pagination{Offset: reqDTO.Offset, PageSize: reqDTO.PageSize}

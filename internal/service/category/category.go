@@ -23,14 +23,11 @@ func NewCategoryService(daos *dao.Daos) CategoryService {
 
 // List 分类列表（全量 + 文章数统计），前台传 state=1 只返回启用分类
 func (s *categoryService) List(ctx context.Context, reqDTO *dto.ListCategoryReqDTO) (*dto.ListCategoryRespDTO, error) {
-	conditions := common.GormConditions{}
-	if reqDTO.Name != "" {
-		conditions = append(conditions, &common.LikeCond{Field: "name", Value: reqDTO.Name})
+	conditions := common.GormConditions{
+		&common.LikeCond{Field: "name", Value: reqDTO.Name},
+		&common.EqCond{Field: "state", Value: reqDTO.State},
+		&common.OrderCond{Columns: []string{"sort ASC", "id ASC"}},
 	}
-	if reqDTO.State != nil {
-		conditions = append(conditions, &common.EqCond{Field: "state", Value: *reqDTO.State})
-	}
-	conditions = append(conditions, &common.OrderCond{Columns: []string{"sort ASC", "id ASC"}})
 
 	categories, err := s.daos.Category.SelectMany(ctx, conditions, nil)
 	if err != nil {

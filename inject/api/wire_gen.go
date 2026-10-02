@@ -21,8 +21,10 @@ import (
 	"gin-web/internal/service/auth"
 	category2 "gin-web/internal/service/category"
 	comment2 "gin-web/internal/service/comment"
+	dashboard2 "gin-web/internal/service/dashboard"
 	link2 "gin-web/internal/service/link"
 	option2 "gin-web/internal/service/option"
+	server2 "gin-web/internal/service/server"
 	tag2 "gin-web/internal/service/tag"
 	"gin-web/pkg/boostrap"
 )
@@ -52,16 +54,20 @@ func NewAppContainer() *AppContainer {
 	categoryService := category2.NewCategoryService(daos)
 	optionService := option2.NewOptionService(daos)
 	commentService := comment2.NewCommentService(daos, optionService)
+	dashboardService := dashboard2.NewDashboardService(daos)
 	linkService := link2.NewLinkService(daos)
 	tagService := tag2.NewTagService(daos)
+	serverService := server2.NewServerService()
 	services := &service.Services{
-		Article:  articleService,
-		Auth:     authService,
-		Category: categoryService,
-		Comment:  commentService,
-		Link:     linkService,
-		Option:   optionService,
-		Tag:      tagService,
+		Article:   articleService,
+		Auth:      authService,
+		Category:  categoryService,
+		Comment:   commentService,
+		Dashboard: dashboardService,
+		Link:      linkService,
+		Option:    optionService,
+		Server:    serverService,
+		Tag:       tagService,
 	}
 	commonHandler := handler.NewCommonHandler(services)
 	healthHandler := handler.NewHealthHandler(db)
@@ -70,18 +76,22 @@ func NewAppContainer() *AppContainer {
 	categoryHandler := handler.NewCategoryHandler(services)
 	tagHandler := handler.NewTagHandler(services)
 	commentHandler := handler.NewCommentHandler(services)
+	dashboardHandler := handler.NewDashboardHandler(services)
 	linkHandler := handler.NewLinkHandler(services)
+	serverHandler := handler.NewServerHandler(services)
 	uploadHandler := handler.NewUploadHandler()
 	handlers := &handler.Handlers{
-		Common:   commonHandler,
-		Health:   healthHandler,
-		Auth:     authHandler,
-		Article:  articleHandler,
-		Category: categoryHandler,
-		Tag:      tagHandler,
-		Comment:  commentHandler,
-		Link:     linkHandler,
-		Upload:   uploadHandler,
+		Common:    commonHandler,
+		Health:    healthHandler,
+		Auth:      authHandler,
+		Article:   articleHandler,
+		Category:  categoryHandler,
+		Tag:       tagHandler,
+		Comment:   commentHandler,
+		Dashboard: dashboardHandler,
+		Link:      linkHandler,
+		Server:    serverHandler,
+		Upload:    uploadHandler,
 	}
 	appContainer := &AppContainer{
 		Handlers: handlers,

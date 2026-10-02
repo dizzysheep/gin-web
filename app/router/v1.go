@@ -74,6 +74,13 @@ func UseV1(r *gin.RouterGroup, handlers *handler.Handlers) {
 		// 站点配置
 		apiJwtV1.PUT("/admin/option", handlers.Common.SaveOptions)
 
+		// 首页工作台
+		apiJwtV1.GET("/admin/dashboard/overview", handlers.Dashboard.Overview)
+		apiJwtV1.GET("/admin/dashboard/trend", handlers.Dashboard.Trend)
+
+		// 运维管理
+		apiJwtV1.GET("/admin/server", handlers.Server.Info)
+
 		// 文件上传
 		apiJwtV1.POST("/upload/image", handlers.Upload.UploadImage)
 	}

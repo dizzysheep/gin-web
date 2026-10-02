@@ -29,12 +29,9 @@ func (s *tagService) List(ctx context.Context, reqDTO *dto.ListTagReqDTO) (*dto.
 		eg     errgroup.Group
 	)
 
-	conditions := common.GormConditions{}
-	if reqDTO.Name != "" {
-		conditions = append(conditions, &common.LikeCond{Field: "name", Value: reqDTO.Name})
-	}
-	if reqDTO.State != nil {
-		conditions = append(conditions, &common.EqCond{Field: "state", Value: *reqDTO.State})
+	conditions := common.GormConditions{
+		&common.LikeCond{Field: "name", Value: reqDTO.Name},
+		&common.EqCond{Field: "state", Value: reqDTO.State},
 	}
 
 	pager := &common.Pagination{Offset: reqDTO.Offset, PageSize: reqDTO.PageSize}

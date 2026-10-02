@@ -22,14 +22,11 @@ func NewLinkService(daos *dao.Daos) LinkService {
 
 // List 友链列表（全量，前台传 state=1 只返回启用）
 func (s *linkService) List(ctx context.Context, reqDTO *dto.ListLinkReqDTO) (*dto.ListLinkRespDTO, error) {
-	conditions := common.GormConditions{}
-	if reqDTO.Name != "" {
-		conditions = append(conditions, &common.LikeCond{Field: "name", Value: reqDTO.Name})
+	conditions := common.GormConditions{
+		&common.LikeCond{Field: "name", Value: reqDTO.Name},
+		&common.EqCond{Field: "state", Value: reqDTO.State},
+		&common.OrderCond{Columns: []string{"sort ASC", "id ASC"}},
 	}
-	if reqDTO.State != nil {
-		conditions = append(conditions, &common.EqCond{Field: "state", Value: *reqDTO.State})
-	}
-	conditions = append(conditions, &common.OrderCond{Columns: []string{"sort ASC", "id ASC"}})
 
 	pos, err := s.daos.Link.SelectMany(ctx, conditions, nil)
 	if err != nil {

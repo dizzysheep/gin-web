@@ -15,6 +15,7 @@ type Reader interface {
 	SelectOneBySlug(ctx context.Context, slug string) (*model.Article, error)
 	ExistSlug(ctx context.Context, slug string, excludeID int64) (bool, error)
 	Archive(ctx context.Context) ([]*model.ArchiveRow, error)
+	CountPublishedByDay(ctx context.Context, startUnix, endUnix int64) ([]*model.ArticleTrendRow, error)
 }
 
 type Writer interface {

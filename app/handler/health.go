@@ -33,11 +33,12 @@ type HealthResponse struct {
 func (h *HealthHandler) Index(c *gin.Context) {
 	resp := &HealthResponse{Status: "ok", Db: "ok", Redis: "ok"}
 
-	if h.db != nil {
-		if err := h.db.WithContext(c.Request.Context()).Raw("SELECT 1").Scan(&struct{}{}).Error; err != nil {
-			resp.Db = "fail"
-			resp.Status = "fail"
-		}
+	if h.db == nil {
+		resp.Db = "fail"
+		resp.Status = "fail"
+	} else if sqlDB, err := h.db.DB(); err != nil || sqlDB.PingContext(c.Request.Context()) != nil {
+		resp.Db = "fail"
+		resp.Status = "fail"
 	}
 
 	if redis.RedisClient != nil {

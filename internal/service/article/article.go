@@ -67,12 +67,11 @@ func (s *articleService) List(ctx context.Context, reqDTO *dto.ListArticleReqDTO
 
 // AdminList 管理端文章列表（含草稿）
 func (s *articleService) AdminList(ctx context.Context, reqDTO *dto.AdminListArticleReqDTO) (*dto.ListArticleRespDTO, error) {
-	conditions := common.GormConditions{}
-	if reqDTO.State != nil {
-		conditions = append(conditions, &common.EqCond{Field: "state", Value: *reqDTO.State})
-	}
-	if reqDTO.IsDraft != nil {
-		conditions = append(conditions, &common.EqCond{Field: "is_draft", Value: *reqDTO.IsDraft})
+	conditions := common.GormConditions{
+		&common.EqCond{Field: "state", Value: reqDTO.State},
+		&common.EqCond{Field: "is_draft", Value: reqDTO.IsDraft},
+		&common.GteCond{Field: "published_on", Value: reqDTO.PublishedFrom},
+		&common.LtCond{Field: "published_on", Value: reqDTO.PublishedTo},
 	}
 	conditions = s.appendFilters(conditions, reqDTO.CategoryID, reqDTO.Keyword)
 
@@ -92,14 +91,11 @@ func (s *articleService) appendFilters(conditions common.GormConditions, categor
 	if categoryID > 0 {
 		conditions = append(conditions, &common.EqCond{Field: "category_id", Value: categoryID})
 	}
-	if keyword != "" {
-		conditions = append(conditions, &common.OrConditions{GormCond: []common.GormCond{
-			&common.LikeCond{Field: "title", Value: keyword},
-			&common.LikeCond{Field: "desc", Value: keyword},
-			&common.LikeCond{Field: "content_md", Value: keyword},
-		}})
-	}
-	return conditions
+	return append(conditions, &common.OrConditions{GormCond: []common.GormCond{
+		&common.LikeCond{Field: "title", Value: keyword},
+		&common.LikeCond{Field: "desc", Value: keyword},
+		&common.LikeCond{Field: "content_md", Value: keyword},
+	}})
 }
 
 func (s *articleService) list(ctx context.Context, conditions common.GormConditions, tagID int64, pager *dto.Pager) (*dto.ListArticleRespDTO, error) {
@@ -478,7 +474,7 @@ func (s *articleService) Publish(ctx context.Context, reqDTO *dto.PublishArticle
 }
 
 // State 启用/禁用
-func (s *articleService) State(ctx context.Context, reqDTO *dto.StateArticleReqDTO) error {
+func (s *articleService) State(ctx context.Context, reqDTO *dto.StateReqDTO) error {
 	po, err := s.daos.Article.SelectOne(ctx, reqDTO.ID)
 	if err != nil {
 		return errcode.NewCustomError(errcode.ErrArticleNotFound)

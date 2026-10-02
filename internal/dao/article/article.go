@@ -92,6 +92,18 @@ func (dao *articleDao) Archive(ctx context.Context) ([]*model.ArchiveRow, error)
 	return rows, err
 }
 
+// CountPublishedByDay returns published article counts grouped by calendar day.
+func (dao *articleDao) CountPublishedByDay(ctx context.Context, startUnix, endUnix int64) ([]*model.ArticleTrendRow, error) {
+	var rows []*model.ArticleTrendRow
+	err := dao.WithContext(ctx).Model(&model.Article{}).
+		// DATE_FORMAT keeps the aggregate key stable when the MySQL driver scans
+		// the result into the string field used by the dashboard response.
+		Select("DATE_FORMAT(FROM_UNIXTIME(published_on), '%Y-%m-%d') AS day, COUNT(*) AS total").
+		Where("deleted_on = 0 AND state = ? AND is_draft = ? AND published_on >= ? AND published_on < ?", model.StateEnabled, 0, startUnix, endUnix).
+		Group("day").Order("day ASC").Scan(&rows).Error
+	return rows, err
+}
+
 func (dao *articleDao) Create(ctx context.Context, article *model.Article, tagIDs []int64) error {
 	return dao.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(article).Error; err != nil {
