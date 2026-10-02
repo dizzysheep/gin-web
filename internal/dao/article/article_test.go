@@ -111,8 +111,9 @@ func TestCreate(t *testing.T) {
 func TestDelete(t *testing.T) {
 	dao, mock := newArticleDao(t)
 	mock.ExpectBegin()
-	mock.ExpectExec(regexp.QuoteMeta("UPDATE `blog_article` SET `deleted_on`=?,`state`=? WHERE id = ? AND deleted_on = 0")).
-		WithArgs(sqlmock.AnyArg(), int8(0), int64(7)).
+	// modified_on 由 GORM autoUpdateTime 自动补列
+	mock.ExpectExec(regexp.QuoteMeta("UPDATE `blog_article` SET `deleted_on`=?,`state`=?,`modified_on`=? WHERE id = ? AND deleted_on = 0")).
+		WithArgs(sqlmock.AnyArg(), int8(0), sqlmock.AnyArg(), int64(7)).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `blog_article_tag` WHERE article_id = ?")).
 		WithArgs(int64(7)).

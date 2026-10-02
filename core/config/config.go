@@ -30,11 +30,6 @@ var (
 	LogTopic     = "golang_log"
 	DbMode       = false
 
-	// skywalking服务器配置
-	SkywalkingHost                 = ""
-	SkywalkingSwitch               = false
-	SkywalkingSamplingRate float64 = 0
-
 	RunMode = "debug"
 
 	// IsDevEnv 开发环境标志
@@ -114,10 +109,6 @@ func LoadApp() {
 	if Env == "dev" {
 		IsDevEnv = true
 	}
-	// skywalking服务器配置
-	SkywalkingSwitch = GetBool("skywalking.SwitchOn")
-	SkywalkingHost = GetString("skywalking.Host")
-	SkywalkingSamplingRate = GetFloat64("skywalking.SamplingRate")
 }
 
 // GetFloat64 获取浮点数配置

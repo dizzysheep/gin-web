@@ -69,7 +69,6 @@
 | 密码哈希 | bcrypt | 现有 |
 | 依赖注入 | google/wire | 现有，编译期注入 |
 | 日志 | logrus + 按天切分 + 敏感信息脱敏 | 现有 |
-| 链路追踪 | SkyWalking（可选） | 现有 |
 | 参数校验 | go-playground/validator | 现有 |
 | API 文档 | swag（Swagger 2.0） | 现有 |
 | 配置 | viper（app.toml） | 现有 |
@@ -510,7 +509,6 @@ type ArticleAddReq struct {
 - 慢 SQL：现有 `gorm_log.go` 输出慢查询日志，阈值配置化（默认 200ms）。
 - 健康检查：现有 `/health` 接口扩展为同时探测 DB（`SELECT 1`）与 Redis（`PING`），供 Nginx/K8s 探活。
 - 指标（后续扩展）：`expvar` 或 prometheus client 输出 QPS、时延、错误率。
-- 链路追踪：SkyWalking 已集成，按需开启。
 
 ---
 

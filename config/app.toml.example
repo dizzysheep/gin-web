@@ -54,7 +54,3 @@ viewFlushSec = 600
 baseURL = ""
 title = "gin-web 个人博客"
 description = "基于 gin-web 的个人博客"
-[skywalking]
-switchOn=false
-samplingRate=1
-host="localhost:11800"

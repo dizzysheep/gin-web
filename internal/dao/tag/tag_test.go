@@ -33,8 +33,9 @@ func newTagDao(t *testing.T) (TagDao, sqlmock.Sqlmock) {
 // 验证删除为软删除（UPDATE deleted_on），而非物理DELETE
 func TestDeleteOne(t *testing.T) {
 	dao, mock := newTagDao(t)
-	mock.ExpectExec(regexp.QuoteMeta("UPDATE `blog_tag` SET `deleted_on`=?,`state`=? WHERE id = ? AND deleted_on = 0")).
-		WithArgs(sqlmock.AnyArg(), int8(0), int64(7)).
+	// modified_on 由 GORM autoUpdateTime 自动补列
+	mock.ExpectExec(regexp.QuoteMeta("UPDATE `blog_tag` SET `deleted_on`=?,`state`=?,`modified_on`=? WHERE id = ? AND deleted_on = 0")).
+		WithArgs(sqlmock.AnyArg(), int8(0), sqlmock.AnyArg(), int64(7)).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
 	if err := dao.DeleteOne(context.Background(), 7); err != nil {

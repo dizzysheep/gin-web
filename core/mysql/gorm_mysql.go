@@ -3,7 +3,6 @@ package mysql
 import (
 	"context"
 	"gin-web/core/config"
-	"gin-web/core/crypto"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -16,8 +15,6 @@ import (
 
 var dbs = make(map[string]*gorm.DB)
 var lock = sync.RWMutex{}
-
-const InstanceIdKey = "gorm:instance_id"
 
 func GetMysql(dbName string) *gorm.DB {
 	lock.RLock()
@@ -56,11 +53,6 @@ func GetMysql(dbName string) *gorm.DB {
 		panic(err.Error())
 	}
 
-	//开启skywalkingSwitch
-	if config.SkywalkingSwitch {
-		InitGormHook(db)
-	}
-	db = db.Set(InstanceIdKey, crypto.Md5(dbConf.Dsn))
 	sqlDB, err := db.DB()
 	if err != nil {
 		panic(err.Error())
