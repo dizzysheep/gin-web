@@ -18,49 +18,63 @@
         router
         :collapse="sidebarCollapsed"
         :collapse-transition="false"
-        :default-active="$route.path"
+        :default-active="activeMenu"
       >
-        <div v-show="!sidebarCollapsed" class="menu-label">工作台</div>
         <el-menu-item index="/">
           <el-icon><Odometer /></el-icon>
           <template #title>仪表盘</template>
         </el-menu-item>
 
-        <div v-show="!sidebarCollapsed" class="menu-label menu-label-spaced">内容管理</div>
-        <el-menu-item index="/article">
-          <el-icon><Document /></el-icon>
-          <template #title>文章管理</template>
-        </el-menu-item>
-        <el-menu-item index="/category">
-          <el-icon><Files /></el-icon>
-          <template #title>分类管理</template>
-        </el-menu-item>
-        <el-menu-item index="/tag">
-          <el-icon><PriceTag /></el-icon>
-          <template #title>标签管理</template>
-        </el-menu-item>
-        <el-menu-item index="/comment">
-          <el-icon><ChatDotRound /></el-icon>
+        <el-sub-menu index="content">
           <template #title>
-            <span class="menu-title-with-badge">评论管理 <em v-if="pendingComments">{{ pendingComments }}</em></span>
+            <el-icon><Reading /></el-icon>
+            <span>内容管理</span>
           </template>
-        </el-menu-item>
+          <el-menu-item index="/article">
+            <el-icon><Document /></el-icon>
+            <template #title>文章管理</template>
+          </el-menu-item>
+          <el-menu-item index="/category">
+            <el-icon><Files /></el-icon>
+            <template #title>分类管理</template>
+          </el-menu-item>
+          <el-menu-item index="/tag">
+            <el-icon><PriceTag /></el-icon>
+            <template #title>标签管理</template>
+          </el-menu-item>
+          <el-menu-item index="/comment">
+            <el-icon><ChatDotRound /></el-icon>
+            <template #title>
+              <span class="menu-title-with-badge">评论管理 <em v-if="pendingComments">{{ pendingComments }}</em></span>
+            </template>
+          </el-menu-item>
+        </el-sub-menu>
 
-        <div v-show="!sidebarCollapsed" class="menu-label menu-label-spaced">站点设置</div>
-        <el-menu-item index="/link">
-          <el-icon><Link /></el-icon>
-          <template #title>友链管理</template>
-        </el-menu-item>
-        <el-menu-item index="/option">
-          <el-icon><Setting /></el-icon>
-          <template #title>站点配置</template>
-        </el-menu-item>
+        <el-sub-menu index="site">
+          <template #title>
+            <el-icon><Tools /></el-icon>
+            <span>站点设置</span>
+          </template>
+          <el-menu-item index="/link">
+            <el-icon><Link /></el-icon>
+            <template #title>友链管理</template>
+          </el-menu-item>
+          <el-menu-item index="/option">
+            <el-icon><Setting /></el-icon>
+            <template #title>站点配置</template>
+          </el-menu-item>
+        </el-sub-menu>
 
-        <div v-show="!sidebarCollapsed" class="menu-label menu-label-spaced">运维管理</div>
-        <el-menu-item index="/server">
-          <el-icon><Monitor /></el-icon>
-          <template #title>服务器管理</template>
-        </el-menu-item>
+        <el-sub-menu index="ops">
+          <template #title>
+            <el-icon><Operation /></el-icon>
+            <span>运维管理</span>
+          </template>
+          <el-menu-item index="/server">
+            <el-icon><Monitor /></el-icon>
+            <template #title>服务器管理</template>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
 
       <div class="aside-footer">
@@ -166,6 +180,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Odometer, Document, Files, PriceTag, ChatDotRound, Link, Setting, Monitor,
+  Reading, Tools, Operation,
   ArrowDown, ArrowRight, Close, MoreFilled, Expand, Fold, Search, Bell, FullScreen
 } from '@element-plus/icons-vue'
 import { useUserStore } from '../stores/user'
@@ -177,6 +192,8 @@ const user = useUserStore()
 const sidebarCollapsed = ref(localStorage.getItem('sidebar-collapsed') === '1')
 const pendingComments = ref(0)
 const pageTitle = computed(() => route.meta.title || '仪表盘')
+// 新建/编辑文章页不属于独立菜单项，统一高亮「文章管理」，el-menu 会据此自动展开父级子菜单
+const activeMenu = computed(() => (route.path.startsWith('/article') ? '/article' : route.path))
 
 const HOME_TAB = { path: '/', title: '仪表盘', affix: true }
 const tabs = ref([{ ...HOME_TAB }])
@@ -273,8 +290,6 @@ async function submitPassword() {
 .logo-copy strong { color: var(--art-gray-900); font-size: 15px; font-weight: 650; }
 .logo-copy span { margin-top: 3px; color: var(--art-gray-500); font-size: 11px; }
 .sidebar-menu { flex: 1; overflow-y: auto; padding: 14px 10px; border-right: 0; background: transparent; --el-menu-bg-color: transparent; --el-menu-text-color: var(--art-gray-700); --el-menu-hover-bg-color: var(--art-hover-color); --el-menu-active-color: var(--theme-color); }
-.menu-label { padding: 0 12px 7px; color: var(--art-gray-500); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-.menu-label-spaced { margin-top: 19px; }
 .sidebar-menu :deep(.el-menu-item) { position: relative; display: flex; align-items: center; height: 44px; margin-bottom: 3px; padding: 0 12px !important; border-radius: 8px; color: var(--art-gray-700); font-size: 14px; transition: background .15s ease, color .15s ease; }
 .sidebar-menu :deep(.el-menu-item .el-icon) { width: 19px; margin-right: 11px; font-size: 17px; color: var(--art-gray-500); }
 .sidebar-menu :deep(.el-menu-item:hover) { color: var(--art-gray-900); background: var(--art-hover-color); }
@@ -282,9 +297,20 @@ async function submitPassword() {
 .sidebar-menu :deep(.el-menu-item.is-active) { color: var(--theme-color); background: var(--el-color-primary-light-9); font-weight: 500; }
 .sidebar-menu :deep(.el-menu-item.is-active::before) { position: absolute; left: 0; width: 3px; height: 20px; border-radius: 0 3px 3px 0; background: var(--theme-color); content: ''; }
 .sidebar-menu :deep(.el-menu-item.is-active .el-icon) { color: var(--theme-color); }
+/* 可折叠分组标题，与一级菜单项同高同圆角 */
+.sidebar-menu :deep(.el-sub-menu__title) { height: 44px; margin-bottom: 3px; padding: 0 12px !important; border-radius: 8px; color: var(--art-gray-700); font-size: 14px; transition: background .15s ease, color .15s ease; }
+.sidebar-menu :deep(.el-sub-menu__title:hover) { color: var(--art-gray-900); background: var(--art-hover-color); }
+.sidebar-menu :deep(.el-sub-menu__title .el-icon) { width: 19px; margin-right: 11px; font-size: 17px; color: var(--art-gray-500); }
+.sidebar-menu :deep(.el-sub-menu__title:hover .el-icon) { color: var(--art-gray-800); }
+.sidebar-menu :deep(.el-sub-menu__icon-arrow) { right: 12px; color: var(--art-gray-400); font-size: 12px; }
+/* 内联展开的子项容器去掉默认底色，子项整体缩进 */
+.sidebar-menu :deep(.el-menu--inline) { background: transparent; }
+.sidebar-menu :deep(.el-menu--inline .el-menu-item) { padding-left: 44px !important; }
 .sidebar-menu :deep(.el-menu--collapse) { padding: 14px 10px; }
-.sidebar-menu :deep(.el-menu--collapse .el-menu-item) { justify-content: center; padding: 0 !important; }
-.sidebar-menu :deep(.el-menu--collapse .el-menu-item .el-icon) { margin: 0; }
+.sidebar-menu :deep(.el-menu--collapse .el-menu-item),
+.sidebar-menu :deep(.el-menu--collapse .el-sub-menu__title) { justify-content: center; padding: 0 !important; }
+.sidebar-menu :deep(.el-menu--collapse .el-menu-item .el-icon),
+.sidebar-menu :deep(.el-menu--collapse .el-sub-menu__title .el-icon) { margin: 0; }
 .menu-title-with-badge { display: flex; align-items: center; gap: 7px; }
 .menu-title-with-badge em { min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #fff0f0; color: #f56c6c; font-size: 11px; font-style: normal; line-height: 18px; text-align: center; }
 .aside-footer { padding: 0 18px 18px; white-space: nowrap; }
