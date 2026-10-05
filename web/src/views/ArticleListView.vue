@@ -232,9 +232,9 @@ async function onCommand(cmd, row) {
 }
 
 async function onPublish(row) {
-  await publishArticle(row.id, row.is_draft !== 1)
+  await publishArticle(row.id, row.is_draft === 1)
   ElMessage.success(row.is_draft === 1 ? '已发布' : '已转为草稿')
-  load()
+  await load()
 }
 
 async function onTop(row) {
