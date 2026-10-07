@@ -33,6 +33,7 @@ func ListArticleReqToDTO(c *gin.Context) (*ListArticleReqDTO, error) {
 }
 
 type ListArticleReqDTO struct {
+	ID         int64 // 精确按文章 ID 查询（Agent 工具使用），> 0 时忽略其他筛选
 	CategoryID int64
 	TagID      int64
 	Keyword    string

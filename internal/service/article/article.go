@@ -55,7 +55,12 @@ func (s *articleService) List(ctx context.Context, reqDTO *dto.ListArticleReqDTO
 		&common.EqCond{Field: "state", Value: model.StateEnabled},
 		&common.EqCond{Field: "is_draft", Value: 0},
 	}
-	conditions = s.appendFilters(conditions, reqDTO.CategoryID, reqDTO.Keyword)
+	if reqDTO.ID > 0 {
+		// 精确 ID 查询时其他筛选条件无意义，直接跳过关键词模糊匹配
+		conditions = append(conditions, &common.EqCond{Field: "id", Value: reqDTO.ID})
+	} else {
+		conditions = s.appendFilters(conditions, reqDTO.CategoryID, reqDTO.Keyword)
+	}
 
 	result, err := s.list(ctx, conditions, reqDTO.TagID, reqDTO.Pager)
 	if err != nil {
@@ -641,7 +646,7 @@ func (s *articleService) listCacheKey(ctx context.Context, req *dto.ListArticleR
 			version = value
 		}
 	}
-	query := fmt.Sprintf("%s|%d|%d|%d|%d|%s", version, req.Pager.Page, req.Pager.PageSize, req.CategoryID, req.TagID, req.Keyword)
+	query := fmt.Sprintf("%s|%d|%d|%d|%d|%d|%s", version, req.Pager.Page, req.Pager.PageSize, req.ID, req.CategoryID, req.TagID, req.Keyword)
 	hash := sha256.Sum256([]byte(query))
 	return fmt.Sprintf("%s%x", listCachePrefix, hash[:])
 }

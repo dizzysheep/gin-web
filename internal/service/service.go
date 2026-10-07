@@ -1,6 +1,7 @@
 package service
 
 import (
+	"gin-web/internal/agent"
 	"gin-web/internal/service/article"
 	"gin-web/internal/service/auth"
 	"gin-web/internal/service/category"
@@ -14,6 +15,7 @@ import (
 )
 
 type Services struct {
+	Agent     *agent.Service
 	Article   article.ArticleService
 	Auth      auth.AuthService
 	Category  category.CategoryService
@@ -26,6 +28,7 @@ type Services struct {
 }
 
 var ProviderSet = wire.NewSet(
+	agent.NewServiceFromConfig,
 	article.NewArticleService,
 	auth.NewAuthService,
 	category.NewCategoryService,

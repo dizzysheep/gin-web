@@ -6,7 +6,8 @@
 appName = "gin-web"
 appAddr = ":6060"
 readTimeout = 60
-writeTimeout = 60
+# Agent SSE 等长响应依赖较大的写超时（真实模型两轮调用可能超过 60s）
+writeTimeout = 300
 env = "dev"
 runMode = "debug"
 [db_blog]
@@ -54,3 +55,9 @@ viewFlushSec = 600
 baseURL = ""
 title = "gin-web 个人博客"
 description = "基于 gin-web 的个人博客"
+[agent]
+# OpenAI 兼容中转站地址
+domain = "https://new.sharedchat.cc/codex"
+# 从中转站控制台获取；请勿提交真实密钥
+key = ""
+model = "5.6-sol"

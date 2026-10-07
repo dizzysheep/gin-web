@@ -20,7 +20,8 @@ const routes = [
       { path: 'comment', name: 'comment', component: () => import('../views/CommentView.vue'), meta: { title: '评论管理' } },
       { path: 'link', name: 'link', component: () => import('../views/LinkView.vue'), meta: { title: '友链管理' } },
       { path: 'option', name: 'option', component: () => import('../views/OptionView.vue'), meta: { title: '站点配置' } },
-      { path: 'server', name: 'server', component: () => import('../views/ServerView.vue'), meta: { title: '服务器管理' } }
+      { path: 'server', name: 'server', component: () => import('../views/ServerView.vue'), meta: { title: '服务器管理' } },
+      { path: 'agent', name: 'agent-chat', component: () => import('../views/AgentChatView.vue'), meta: { title: 'AI 助手' } }
     ]
   },
   { path: '/:pathMatch(.*)*', redirect: '/' }

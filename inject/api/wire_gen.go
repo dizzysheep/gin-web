@@ -8,6 +8,7 @@ package api
 
 import (
 	"gin-web/app/handler"
+	"gin-web/internal/agent"
 	"gin-web/internal/dao"
 	"gin-web/internal/dao/article"
 	"gin-web/internal/dao/category"
@@ -59,6 +60,7 @@ func NewAppContainer() *AppContainer {
 	tagService := tag2.NewTagService(daos)
 	serverService := server2.NewServerService()
 	services := &service.Services{
+		Agent:     agent.NewServiceFromConfig(articleService),
 		Article:   articleService,
 		Auth:      authService,
 		Category:  categoryService,
@@ -70,6 +72,7 @@ func NewAppContainer() *AppContainer {
 		Tag:       tagService,
 	}
 	commonHandler := handler.NewCommonHandler(services)
+	agentHandler := handler.NewAgentHandler(services)
 	healthHandler := handler.NewHealthHandler(db)
 	authHandler := handler.NewAuthHandler(services)
 	articleHandler := handler.NewArticleHandler(services)
@@ -81,6 +84,7 @@ func NewAppContainer() *AppContainer {
 	serverHandler := handler.NewServerHandler(services)
 	uploadHandler := handler.NewUploadHandler()
 	handlers := &handler.Handlers{
+		Agent:     agentHandler,
 		Common:    commonHandler,
 		Health:    healthHandler,
 		Auth:      authHandler,

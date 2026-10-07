@@ -34,6 +34,10 @@
             <el-icon><Document /></el-icon>
             <template #title>文章管理</template>
           </el-menu-item>
+          <el-menu-item index="/agent">
+            <el-icon><ChatLineRound /></el-icon>
+            <template #title>AI 助手</template>
+          </el-menu-item>
           <el-menu-item index="/category">
             <el-icon><Files /></el-icon>
             <template #title>分类管理</template>
@@ -179,7 +183,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Odometer, Document, Files, PriceTag, ChatDotRound, Link, Setting, Monitor,
+  Odometer, Document, Files, PriceTag, ChatDotRound, ChatLineRound, Link, Setting, Monitor,
   Reading, Tools, Operation,
   ArrowDown, ArrowRight, Close, MoreFilled, Expand, Fold, Search, Bell, FullScreen
 } from '@element-plus/icons-vue'

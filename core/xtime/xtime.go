@@ -37,12 +37,12 @@ const (
 
 const SecondInNano = 1000 * 1000 * 1000
 
-//return 1441006057 in sec
+// return 1441006057 in sec
 func GetTimestamp() int64 {
 	return time.Now().Unix()
 }
 
-//return 1441006057 in sec
+// return 1441006057 in sec
 func GetTimestampString() string {
 	return strconv.FormatInt(GetTimestamp(), 10)
 }
@@ -57,7 +57,7 @@ func GetTimestampInMilliString() string {
 	return strconv.FormatInt(GetTimestampInMilli(), 10)
 }
 
-//微秒
+// 微秒
 func GetTimestampInMicro() int64 {
 	return int64(time.Now().UnixNano() / 1000) // ms
 }
@@ -67,12 +67,11 @@ func GetTimestampInMicroString() string {
 	return strconv.FormatInt(GetTimestampInMicro(), 10)
 }
 
-//format
+// format
 func GetCurrentTimeFormat(format string) string {
 	return GetTimeFormat(GetTimestamp(), format)
 }
 
-//
 func GetTimeFormat(second int64, format string) string {
 	return time.Unix(second, 0).Format(format)
 }
@@ -125,7 +124,7 @@ func ToDayEnd(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 999, time.Local)
 }
 
-//GetBirthday brith 2019-11-07
+// GetBirthday brith 2019-11-07
 func Birthday(birth string) (int, error) {
 	birthSlice := strings.Split(birth, "-")
 
@@ -147,12 +146,12 @@ func Birthday(birth string) (int, error) {
 	return age, nil
 }
 
-//时间转换
-//t time.Time 要转换的时间
-//返回结果：
-//1、近三天内，显示“今天”、“昨天”、“前天”+时间，例如“前天17:59”；
-//2、今年内显示日期，例如“11月5日”；
-//3、去年及以前则显示年月日，例如“2018-10-21”
+// 时间转换
+// t time.Time 要转换的时间
+// 返回结果：
+// 1、近三天内，显示“今天”、“昨天”、“前天”+时间，例如“前天17:59”；
+// 2、今年内显示日期，例如“11月5日”；
+// 3、去年及以前则显示年月日，例如“2018-10-21”
 func StrTime(t time.Time) string {
 	//默认时间返回空
 	if t.Format(DATE_TIME_FMT) == DEFAULE_TIME_FMT {
@@ -187,11 +186,11 @@ func StrTime(t time.Time) string {
 	return ""
 }
 
-//时间转换
-//timeStr string  时间戳字符串
-//返回结果：
-//1、近三天内，显示 今天/昨天/前天
-//2、非近三天，则返回空
+// 时间转换
+// timeStr string  时间戳字符串
+// 返回结果：
+// 1、近三天内，显示 今天/昨天/前天
+// 2、非近三天，则返回空
 func WithinThreeDays(timeStr string) string {
 	// 计算今天最大时间戳 2020-03-03 23:59:59
 	todayDate := time.Now().Format(DATE_FMT)

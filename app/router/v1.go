@@ -31,6 +31,10 @@ func UseV1(r *gin.RouterGroup, handlers *handler.Handlers) {
 
 	apiJwtV1 := r.Group("/v1").Use(middleware.JWT())
 	{
+		//agent
+		apiJwtV1.GET("/admin/agent/tools", handlers.Agent.Tools)
+		apiJwtV1.POST("/admin/agent/chat", handlers.Agent.Chat)
+
 		// 认证
 		apiJwtV1.POST("/user/logout", handlers.Auth.Logout)
 		apiJwtV1.GET("/user/info", handlers.Auth.Info)
